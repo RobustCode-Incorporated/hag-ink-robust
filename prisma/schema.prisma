@@ -1,0 +1,104 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+enum Role {
+  CLIENT
+  MANAGER
+  BARBER
+  CLEANER
+  CEO
+}
+
+enum ProductType {
+  TO_SELL
+  TO_USE
+}
+
+enum PlanName {
+  STANDARD_ENFANT
+  STANDARD_ADULTE
+  BRAIDS_A
+  BRAIDS_B
+  LOCKS_A
+  LOCKS_B
+  LIMITED_EDITION
+}
+
+model User {
+  id            String         @id @default(uuid())
+  firstName     String
+  lastName      String
+  phone         String
+  email         String         @unique
+  address       String?
+  role          Role           @default(CLIENT)
+  createdAt     DateTime       @default(now())
+  
+  // Relations applicatives
+  subscriptions Subscription[]
+  managedCuts   Service[]      @relation("ManagerToService")
+  performedCuts Service[]      @relation("BarberToService")
+  expenses      Expense[]
+  barberProfile BarberProfile?
+}
+
+model BarberProfile {
+  id             String   @id @default(uuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  commissionRate Float    @default(0.25)
+  isFixedSalary  Boolean  @default(false)
+  fixedAmount    Float?   @default(0.0)
+}
+
+model Subscription {
+  id                 String   @id @default(uuid())
+  clientId           String
+  client             User     @relation(fields: [clientId], references: [id])
+  planName           PlanName
+  pricePaid          Float
+  planDurationMonths Int
+  donationAmount     Float
+  lotteryTickets     String   // Stockage des tickets séparés par des virgules (ex: "TICKET1, TICKET2")
+  status             String   @default("ACTIVE")
+  startDate          DateTime @default(now())
+  endDate            DateTime
+}
+
+model Product {
+  id          String      @id @default(uuid())
+  name        String
+  type        ProductType
+  priceBought Float       
+  priceSold   Float?      
+  stock       Int
+  updatedAt   DateTime    @updatedAt
+  services    Service[]   @relation("ServiceToProduct")
+}
+
+model Service {
+  id          String    @id @default(uuid())
+  barberId    String
+  barber      User      @relation("BarberToService", fields: [barberId], references: [id])
+  managerId   String
+  manager     User      @relation("ManagerToService", fields: [managerId], references: [id])
+  amount      Float     
+  description String?
+  productId   String?
+  productUsed Product?  @relation("ServiceToProduct", fields: [productId], references: [id])
+  createdAt   DateTime  @default(now())
+}
+
+model Expense {
+  id          String   @id @default(uuid())
+  description String
+  amount      Float
+  createdAt   DateTime @default(now())
+  createdById String
+  createdBy   User     @relation(fields: [createdById], references: [id])
+}
