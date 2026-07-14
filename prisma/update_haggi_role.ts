@@ -23,7 +23,7 @@ async function main() {
       data: { role: 'CEO' },
     });
 
-    console.log(`✅ Rôle mis à jour avec succès pour : ${updatedUser.firstName} ${updatedUser.lastName}`);
+    console.log(`✅ Rôle mis à jour avec succès pour : ${updatedUser.email}`);
     console.log(`Nouveau rôle : ${updatedUser.role}`);
   } catch (error) {
     console.error("❌ Erreur critique :", error);

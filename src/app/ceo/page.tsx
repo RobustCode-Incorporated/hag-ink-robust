@@ -46,8 +46,11 @@ export default function CEODashboard() {
   return (
     <div className="p-8 bg-slate-50 min-h-screen text-slate-900">
       
-      <div className="flex justify-between items-center mb-8">
-        <h1 className="text-2xl font-bold uppercase tracking-tight">Hag-Ink Command Center</h1>
+      <div className="flex flex-col gap-3 md:flex-row md:items-end md:justify-between mb-8">
+        <div>
+          <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Espace CEO</p>
+          <h1 className="text-2xl font-bold uppercase tracking-tight">Vue d'ensemble</h1>
+        </div>
         <select 
             className="bg-white border border-slate-200 p-2 rounded-lg text-sm shadow-sm cursor-pointer outline-none focus:ring-2 focus:ring-blue-500" 
             onChange={(e) => setPeriod(e.target.value)}
@@ -80,6 +83,39 @@ export default function CEODashboard() {
             )}
         </div>
       </div>
+
+      <section className="rounded-2xl bg-white border shadow-sm p-6 mb-8">
+        <div className="flex items-center justify-between gap-4">
+          <div>
+            <h3 className="text-base font-semibold">Dépenses récentes</h3>
+            <p className="mt-1 text-sm text-slate-500">Validation des coûts et historique des dernières sorties.</p>
+          </div>
+        </div>
+        <div className="mt-6 overflow-x-auto">
+          <table className="min-w-full text-left text-sm">
+            <thead className="border-b text-slate-500">
+              <tr>
+                <th className="py-3 uppercase">Montant</th>
+                <th className="py-3 uppercase">Description</th>
+                <th className="py-3 uppercase">Date</th>
+                <th className="py-3 uppercase">Saisi par</th>
+              </tr>
+            </thead>
+            <tbody>
+              {data?.latestExpenses?.length ? data.latestExpenses.map((expense: any) => (
+                <tr key={expense.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
+                  <td className="py-3 font-semibold">${expense.amount}</td>
+                  <td className="py-3 text-slate-600">{expense.description}</td>
+                  <td className="py-3 text-slate-500">{expense.createdAt}</td>
+                  <td className="py-3 text-slate-500">{expense.user}</td>
+                </tr>
+              )) : (
+                <tr><td colSpan={4} className="py-4 text-slate-500">Aucune dépense récente disponible.</td></tr>
+              )}
+            </tbody>
+          </table>
+        </div>
+      </section>
 
       {/* Table avec recherche */}
       <div className="bg-white rounded-2xl border shadow-sm p-6">

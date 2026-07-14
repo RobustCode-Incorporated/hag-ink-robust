@@ -21,7 +21,7 @@ export async function GET(request: Request) {
 
     const [services, expenses] = await Promise.all([
       prisma.service.findMany({ where, include: { barber: true }, orderBy: { createdAt: 'desc' } }),
-      prisma.expense.findMany({ where }) // On filtre aussi les dépenses par période
+      prisma.expense.findMany({ where, include: { user: true } }) // On filtre aussi les dépenses par période
     ]);
 
     // 2. Calculs sur les données déjà FILTRÉES
@@ -49,6 +49,13 @@ export async function GET(request: Request) {
         barber: s.barber?.firstName || 'Inconnu',
         amount: s.amount,
         createdAt: new Date(s.createdAt).toLocaleDateString('fr-FR')
+      })),
+      latestExpenses: expenses.slice(0, 6).map(e => ({
+        id: e.id,
+        amount: e.amount,
+        description: e.description,
+        createdAt: new Date(e.createdAt).toLocaleDateString('fr-FR'),
+        user: e.user ? `${e.user.email}` : 'Système'
       }))
     });
   } catch (error) {

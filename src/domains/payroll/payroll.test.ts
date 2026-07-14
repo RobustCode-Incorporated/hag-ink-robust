@@ -2,16 +2,32 @@ import { describe, it, expect } from 'vitest';
 import { calculatePayroll, StaffMember, ExecutedService } from './payroll';
 
 describe('Domaine Paie - Calcul des Émoluments et des Commissions', () => {
+  it('doit utiliser le taux de commission défini sur chaque membre du personnel', () => {
+    const staff: StaffMember[] = [
+      { id: '1', name: 'Alex Dupont', role: 'BARBER', isFixed: false, commissionRate: 0.4 },
+    ];
+
+    const services: ExecutedService[] = [
+      { id: 'cut-1', barberId: '1', amount: 100 },
+    ];
+
+    const payrollReport = calculatePayroll(staff, services);
+
+    expect(payrollReport.details[0]?.commissionsEarned).toBe(40);
+    expect(payrollReport.totalCommissions).toBe(40);
+    expect(payrollReport.totalMasseSalariale).toBe(40);
+  });
+
   it('doit calculer avec exactitude les salaires fixes, les commissions spécifiques (Bilal 30% / Autres 25%) et le coût global', () => {
     // Given (Le personnel de Hag-Ink enregistré par le CEO)
     const staff: StaffMember[] = [
       { id: '1', name: 'Henock Lubo Lubo', role: 'MANAGER', isFixed: true, fixedAmount: 2000 },
-      { id: '2', name: 'Medy Tshibwabwa', role: 'BARBER', isFixed: false },
-      { id: '3', name: 'Arnold Bopioko Bosondjolo', role: 'BARBER', isFixed: false },
+      { id: '2', name: 'Medy Tshibwabwa', role: 'BARBER', isFixed: false, commissionRate: 0.25 },
+      { id: '3', name: 'Arnold Bopioko Bosondjolo', role: 'BARBER', isFixed: false, commissionRate: 0.25 },
       { id: '4', name: 'Victor Mulamba Abedi', role: 'CLEANER', isFixed: true, fixedAmount: 1200 },
-      { id: '5', name: 'Guyston Biango', role: 'BARBER', isFixed: false },
-      { id: '6', name: 'Bilal Akuma Soumaré', role: 'BARBER', isFixed: false },
-      { id: '7', name: 'Martins Lizanga Lobonyo', role: 'BARBER', isFixed: false },
+      { id: '5', name: 'Guyston Biango', role: 'BARBER', isFixed: false, commissionRate: 0.25 },
+      { id: '6', name: 'Bilal Akuma Soumaré', role: 'BARBER', isFixed: false, commissionRate: 0.3 },
+      { id: '7', name: 'Martins Lizanga Lobonyo', role: 'BARBER', isFixed: false, commissionRate: 0.25 },
     ];
 
     // Les services saisis par Henock sur une période donnée

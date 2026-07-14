@@ -6,6 +6,7 @@ export interface StaffMember {
   role: StaffRole;
   isFixed: boolean;
   fixedAmount?: number;
+  commissionRate?: number;
 }
 
 export interface ExecutedService {
@@ -57,10 +58,7 @@ export function calculatePayroll(staff: StaffMember[], services: ExecutedService
 
     if (member.role === 'BARBER') {
       const totalVolumeGenerated = caPerBarber[member.id] || 0;
-      
-      // Règle métier discriminante : Bilal Akuma Soumaré obtient 30%, les autres 25%
-      const isBilal = member.name.toLowerCase().includes('soumaré') || member.name.toLowerCase().includes('soumare');
-      const commissionRate = isBilal ? 0.30 : 0.25;
+      const commissionRate = member.commissionRate ?? 0.25;
 
       commissionsEarned = totalVolumeGenerated * commissionRate;
       totalCommissions += commissionsEarned;

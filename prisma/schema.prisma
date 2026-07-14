@@ -81,6 +81,7 @@ model Client {
   appointments   Appointment[]
   services       Service[]
   lotteryTickets LotteryTicket[]
+  payments       Payment[]
   createdAt      DateTime        @default(now())
 }
 
@@ -91,6 +92,7 @@ model Plan {
   durationDays Int     @default(30)
   features    String[] // Avantages du forfait
   clients     Client[]
+  payments    Payment[]
 }
 
 model Appointment {
@@ -190,4 +192,19 @@ model LotteryTicket {
   client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
   
   createdAt DateTime @default(now())
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  stripeSessionId String        @unique
+  stripeEventId   String        @unique
+  amount          Int
+  currency        String
+  status          PaymentStatus @default(PAID)
+  createdAt       DateTime      @default(now())
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  planId   String
+  plan     Plan   @relation(fields: [planId], references: [id], onDelete: Restrict)
 }

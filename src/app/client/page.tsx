@@ -8,18 +8,37 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { Black_Ops_One } from "next/font/google";
+import { useState } from "react";
+import SlideOver from "@/components/SlideOver";
 
 const blackOpsOne = Black_Ops_One({ weight: '400', subsets: ['latin'] });
 
 export default function ClientPage() {
+  const [selectedPlan, setSelectedPlan] = useState<{ code: string; name: string; price: number } | null>(null);
+  const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', email: '' });
+  const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const memberships = [
-    { name: "Standard Enfant", target: "Enfants", value: 50, price: 49, desc: "Jusqu’à 5 coiffures (minimum conseillé : 3)", perks: ["Flexibilité totale", "Accès à la loterie"] },
-    { name: "Standard Adulte", target: "Hommes / Femmes", value: 100, price: 89, desc: "Jusqu’à 5 coiffures (minimum conseillé : 3)", perks: ["11$ d'économie", "Accès VIP au programme fidélité"] },
-    { name: "Braids A", target: "Tresses classiques", value: 100, price: 89, desc: "Jusqu’à 5 prestations", perks: ["11$ d'économie"] },
-    { name: "Braids B", target: "Braids Premium", value: 200, price: 189, desc: "Jusqu’à 5 prestations", perks: ["11$ d'économie"] },
-    { name: "Locks A", target: "Entretien Locks", value: 225, price: 209, desc: "Jusqu’à 5 prestations", perks: ["Prix préférentiel", "Priorité de réservation"] },
-    { name: "Locks B", target: "Locks Premium", value: 350, price: 329, desc: "Jusqu’à 5 prestations", perks: ["Économie majeure", "Service ultra-prioritaire"] },
+    { code: "STANDARD_ENFANT", name: "Standard Enfant", target: "Enfants", value: 50, price: 49, desc: "Jusqu’à 5 coiffures (minimum conseillé : 3)", perks: ["Flexibilité totale", "Accès à la loterie"] },
+    { code: "STANDARD_ADULTE", name: "Standard Adulte", target: "Hommes / Femmes", value: 100, price: 89, desc: "Jusqu’à 5 coiffures (minimum conseillé : 3)", perks: ["11$ d'économie", "Accès VIP au programme fidélité"] },
+    { code: "BRAIDS_A", name: "Braids A", target: "Tresses classiques", value: 100, price: 89, desc: "Jusqu’à 5 prestations", perks: ["11$ d'économie"] },
+    { code: "BRAIDS_B", name: "Braids B", target: "Braids Premium", value: 200, price: 189, desc: "Jusqu’à 5 prestations", perks: ["11$ d'économie"] },
+    { code: "LOCKS_A", name: "Locks A", target: "Entretien Locks", value: 225, price: 209, desc: "Jusqu’à 5 prestations", perks: ["Prix préférentiel", "Priorité de réservation"] },
+    { code: "LOCKS_B", name: "Locks B", target: "Locks Premium", value: 350, price: 329, desc: "Jusqu’à 5 prestations", perks: ["Économie majeure", "Service ultra-prioritaire"] },
   ];
+
+  const startCheckout = async (event: React.FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    if (!selectedPlan) return;
+    setCheckoutError(null); setIsSubmitting(true);
+    try {
+      const response = await fetch('/api/payments/create-checkout-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, planName: selectedPlan.code }) });
+      const data: { url?: string; error?: string } = await response.json();
+      if (!response.ok || !data.url) throw new Error(data.error ?? 'Impossible de préparer le paiement.');
+      window.location.assign(data.url);
+    } catch (error) { setCheckoutError(error instanceof Error ? error.message : 'Une erreur est survenue.'); }
+    finally { setIsSubmitting(false); }
+  };
 
   const minorPrizes = [
     { icon: Camera, text: "4e : Séance photo professionnelle" },
@@ -81,7 +100,7 @@ export default function ClientPage() {
               <Calendar className="w-5 h-5" />
               Réserver un créneau
             </button>
-            <button className="px-8 py-4 bg-transparent text-white font-bold uppercase tracking-wider border border-neutral-700 rounded-sm transition-all hover:border-white hover:bg-white/5 flex items-center justify-center gap-2">
+            <button onClick={() => document.getElementById('memberships')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 bg-transparent text-white font-bold uppercase tracking-wider border border-neutral-700 rounded-sm transition-all hover:border-white hover:bg-white/5 flex items-center justify-center gap-2">
               <Scissors className="w-5 h-5" />
               Voir les Memberships
             </button>
@@ -90,7 +109,7 @@ export default function ClientPage() {
       </section>
 
       {/* --- SECTION MEMBERSHIPS --- */}
-      <section className="py-24 px-4 relative border-t border-neutral-900 overflow-hidden">
+      <section id="memberships" className="py-24 px-4 relative border-t border-neutral-900 overflow-hidden">
         
         {/* Nouveau Background Tondeuses avec Overlay dégradé */}
         <div className="absolute inset-0 z-0">
@@ -143,7 +162,7 @@ export default function ClientPage() {
                   </ul>
                 </div>
                 
-                <button className="w-full py-4 bg-neutral-900 border border-neutral-700 text-white font-bold uppercase text-sm tracking-wider hover:bg-white hover:text-black transition-colors">
+                <button onClick={() => setSelectedPlan(plan)} className="w-full py-4 bg-neutral-900 border border-neutral-700 text-white font-bold uppercase text-sm tracking-wider hover:bg-white hover:text-black transition-colors">
                   Sélectionner
                 </button>
               </motion.div>
@@ -172,7 +191,7 @@ export default function ClientPage() {
                   <span className="text-5xl font-black text-white">229$</span>
                   <span className="text-xl text-neutral-600 line-through pb-1">≈250$</span>
                 </div>
-                <button className="w-full md:w-auto px-10 py-4 bg-white text-black font-bold uppercase text-sm tracking-wider hover:bg-neutral-200 transition-colors">
+                <button onClick={() => setSelectedPlan({ code: 'LIMITED_EDITION', name: 'Limited Edition', price: 229 })} className="w-full md:w-auto px-10 py-4 bg-white text-black font-bold uppercase text-sm tracking-wider hover:bg-neutral-200 transition-colors">
                   Devenir VIP
                 </button>
              </div>
@@ -254,6 +273,15 @@ export default function ClientPage() {
   </div>
 </section>
 
+      <SlideOver isOpen={selectedPlan !== null} onClose={() => setSelectedPlan(null)} title="Finaliser votre membership">
+        {selectedPlan && <form onSubmit={startCheckout} className="space-y-5">
+          <div className="border border-neutral-800 bg-neutral-900 p-4"><p className="text-xs uppercase tracking-widest text-neutral-500">Formule choisie</p><p className="mt-1 text-lg font-bold text-white">{selectedPlan.name} — {selectedPlan.price}$</p></div>
+          <p className="text-sm text-neutral-400">Vos informations créent votre profil client Hag & Ink. Le paiement par carte est ensuite traité exclusivement par Stripe.</p>
+          {[['firstName', 'Prénom', 'text'], ['lastName', 'Nom', 'text'], ['phone', 'Téléphone', 'tel'], ['email', 'E-mail (facultatif)', 'email']].map(([field, label, type]) => <label key={field} className="block text-sm text-neutral-300">{label}<input required={field !== 'email'} type={type} value={form[field as keyof typeof form]} onChange={(event) => setForm({ ...form, [field]: event.target.value })} className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white" /></label>)}
+          {checkoutError && <p role="alert" className="text-sm text-red-400">{checkoutError}</p>}
+          <button disabled={isSubmitting} type="submit" className="w-full bg-white px-4 py-4 font-bold uppercase tracking-wider text-black disabled:opacity-60">{isSubmitting ? 'Redirection sécurisée…' : `Payer ${selectedPlan.price}$ avec Stripe`}</button>
+        </form>}
+      </SlideOver>
     </main>
   );
 }

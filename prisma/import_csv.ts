@@ -45,16 +45,54 @@ async function main() {
       for (const row of results) {
         try {
           const date = parseFrenchDate(row.Date);
-          
-          await prisma.service.create({
-            data: {
-              barberId: row.userId,
-              managerId: MANAGER_ID,
-              amount: parseFloat(row.Montant),
-              description: `Prestation importée - Com: ${row.isFixedSalary}$`,
-              createdAt: date,
+          if (!date) {
+            throw new Error(`Date invalide: ${row.Date}`);
+          }
+
+          const barberId = String(row.userId || '').trim();
+          if (!barberId) {
+            throw new Error('Barber userId manquant');
+          }
+
+          // Ensure barber exists (use upsert to be idempotent)
+          const barber = await prisma.barber.upsert({
+            where: { id: barberId },
+            create: {
+              id: barberId,
+              firstName: String(row.firstName || 'Unknown'),
+              lastName: String(row.lastName || 'Barber'),
+              phone: null,
+              commissionRate: Number(row.commissionRate) || 0.25,
+              salaryType: 'COMMISSION',
             },
+            update: {},
           });
+
+          // Validate barber exists before creating service
+          if (!barber || barber.id !== barberId) {
+            throw new Error(`Failed to ensure barber exists for id=${barberId}`);
+          }
+
+          // Parse amount safely
+          const amount = Number(String(row.Montant || '').replace(/[^0-9.-]+/g, ''));
+          if (Number.isNaN(amount)) {
+            throw new Error(`Invalid amount: ${row.Montant}`);
+          }
+
+          try {
+            await prisma.service.create({
+              data: {
+                barberId,
+                amount,
+                createdAt: date,
+              },
+            });
+          } catch (err) {
+            // If FK still fails, log barber existence for debugging
+            const check = await prisma.barber.findUnique({ where: { id: barberId } });
+            console.error('Barber check before failing insert:', !!check, check?.id);
+            throw err;
+          }
           successCount++;
         } catch (e) {
           console.error(`❌ Échec ligne ${row.Date}:`, e);
