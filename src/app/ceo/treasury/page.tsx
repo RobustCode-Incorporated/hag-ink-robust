@@ -1,18 +1,7 @@
-import { PrismaClient } from '@prisma/client';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
+import prisma from '@/lib/prisma';
 import { calculatePayroll, type ExecutedService, type StaffMember } from '../../../domains/payroll/payroll';
 import { TreasuryActions } from './TreasuryActions';
 import { formatMonthLabel, getMonthRange, normalizeSelectedMonth } from './treasury-data';
-
-const globalForPrisma = globalThis as typeof globalThis & { prisma?: PrismaClient };
-const prisma = globalForPrisma.prisma ?? new PrismaClient({
-  adapter: new PrismaPg(new pg.Pool({ connectionString: process.env.DATABASE_URL })),
-});
-
-if (!globalForPrisma.prisma) {
-  globalForPrisma.prisma = prisma;
-}
 
 const currency = (value: number) => `$${value.toFixed(2)}`;
 

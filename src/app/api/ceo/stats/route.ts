@@ -1,11 +1,9 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import prisma from '@/lib/prisma';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
 
-const prisma = new PrismaClient({ 
-  adapter: new PrismaPg(new pg.Pool({ connectionString: process.env.DATABASE_URL })) 
-});
+
 
 export async function GET(request: Request) {
   const { searchParams } = new URL(request.url);

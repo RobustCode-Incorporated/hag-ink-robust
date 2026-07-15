@@ -1,0 +1,211 @@
+datasource db {
+  provider = "postgresql"
+}
+
+generator client {
+  provider = "prisma-client-js"
+  output   = "../generated/prisma"
+}
+
+// --- ENUMS ---
+
+enum Role {
+  CEO
+  MANAGER
+  BARBER
+  CLEANER // <--- Ajouté ici
+  CLIENT
+}
+
+enum AppointmentStatus {
+  PENDING
+  CONFIRMED
+  CANCELLED
+  COMPLETED
+}
+
+enum PaymentStatus {
+  PENDING
+  PAID
+  FAILED
+}
+
+// --- CONFIGURATION UTILISATEURS & EMPLOYÉS ---
+
+model User {
+  id        String   @id @default(uuid())
+  email     String   @unique
+  password  String // Hashé en production
+  role      Role     @default(CLIENT)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // Relations
+  barberProfile Barber?
+  clientProfile Client?
+  expenses      Expense[] // <--- Ajouté pour lier les paiements de salaires (ex: Nettoyeur)
+}
+
+model Barber {
+  id             String  @id @default(uuid())
+  firstName      String
+  lastName       String
+  phone          String?
+  salaryType     String  @default("COMMISSION") // "FIXED", "COMMISSION", "MIXED"
+  fixedSalary    Float   @default(0.0) // Pour le manager par exemple
+  commissionRate Float   @default(0.25) // ex: 0.30 pour Bilal, 0.25 pour les autres
+  userId         String? @unique
+  user           User?   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  // Relations business
+  services     Service[]
+  appointments Appointment[]
+}
+
+// --- ESPACE CLIENT B2C ---
+
+model Client {
+  id        String  @id @default(uuid())
+  firstName String
+  lastName  String
+  phone     String  @unique
+  email     String? @unique
+  userId    String? @unique
+  user      User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+
+  // Plans & Abonnements (B2C)
+  planId     String?
+  plan       Plan?     @relation(fields: [planId], references: [id])
+  planEndsAt DateTime?
+
+  // Relations
+  appointments   Appointment[]
+  services       Service[]
+  lotteryTickets LotteryTicket[]
+  payments       Payment[]
+  createdAt      DateTime        @default(now())
+}
+
+model Plan {
+  id           String    @id @default(uuid())
+  name         String // ex: "Forfait Silver", "Forfait Gold"
+  price        Float
+  durationDays Int       @default(30)
+  features     String[] // Avantages du forfait
+  clients      Client[]
+  payments     Payment[]
+}
+
+model Appointment {
+  id       String            @id @default(uuid())
+  dateTime DateTime
+  status   AppointmentStatus @default(PENDING)
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  barberId String
+  barber   Barber @relation(fields: [barberId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+// --- REVENUS & OPÉRATIONS (SERVICES ET PRODUITS) ---
+
+model Service {
+  id        String   @id @default(uuid())
+  amount    Float // Montant total payé
+  priceType String   @default("FIXED") // "FIXED" ou "FREE"
+  createdAt DateTime @default(now())
+
+  barberId String
+  barber   Barber @relation(fields: [barberId], references: [id])
+
+  clientId String?
+  client   Client? @relation(fields: [clientId], references: [id], onDelete: SetNull)
+
+  // Lien vers la facturation numérique conforme
+  invoice Invoice?
+
+  // Consommation de produits lors de la coupe
+  usedProducts ServiceProduct[]
+}
+
+model Product {
+  id            String  @id @default(uuid())
+  name          String
+  sku           String  @unique // Code barre / Identifiant unique
+  purchasePrice Float // Visible uniquement par Haggi (CEO)
+  sellingPrice  Float // Visible par Henock et Haggi
+  stockQty      Int     @default(0)
+  isConsumable  Boolean @default(false) // Produit de revente ou produit interne
+
+  // Relations
+  usedInServices ServiceProduct[]
+}
+
+model ServiceProduct {
+  serviceId String
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+  productId String
+  product   Product @relation(fields: [productId], references: [id], onDelete: Cascade)
+  quantity  Int     @default(1)
+
+  @@id([serviceId, productId])
+}
+
+// --- FACTURATION & CONFORMITÉ LÉGALE ---
+
+model Invoice {
+  id            String        @id @default(uuid())
+  invoiceNumber String        @unique // Format: INV-2026-XXXX
+  pdfUrl        String? // Stockage Cloud pour envoi WhatsApp / Mail
+  paymentStatus PaymentStatus @default(PENDING)
+  createdAt     DateTime      @default(now())
+
+  serviceId String  @unique
+  service   Service @relation(fields: [serviceId], references: [id], onDelete: Cascade)
+}
+
+// --- DÉPENSES ---
+
+model Expense {
+  id          String   @id @default(uuid())
+  amount      Float
+  description String
+  isValidated Boolean  @default(false) // Validé par Haggi (CEO)
+  createdAt   DateTime @default(now())
+
+  // --- NOUVEAU : Lien vers l'employé pour le suivi des paies ---
+  userId String?
+  user   User?   @relation(fields: [userId], references: [id], onDelete: SetNull)
+}
+
+// --- MARKETING & FIDÉLISATION (LOTERIE) ---
+
+model LotteryTicket {
+  id        String   @id @default(uuid())
+  ticketNum String   @unique // ex: TICKET-2026-991A
+  drawDate  DateTime
+  isWinner  Boolean  @default(false)
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Cascade)
+
+  createdAt DateTime @default(now())
+}
+
+model Payment {
+  id              String        @id @default(uuid())
+  stripeSessionId String        @unique
+  stripeEventId   String        @unique
+  amount          Int
+  currency        String
+  status          PaymentStatus @default(PAID)
+  createdAt       DateTime      @default(now())
+
+  clientId String
+  client   Client @relation(fields: [clientId], references: [id], onDelete: Restrict)
+  planId   String
+  plan     Plan   @relation(fields: [planId], references: [id], onDelete: Restrict)
+}
