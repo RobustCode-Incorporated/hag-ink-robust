@@ -177,6 +177,12 @@ Create `.env` in the repository root:
 
 ```env
 DATABASE_URL="postgresql://USER:PASSWORD@HOST/DATABASE?sslmode=require"
+AUTH_JWT_SECRET="replace_with_a_long_random_secret"
+CEO_LOGIN_EMAIL="admin@hagink.local"
+CEO_LOGIN_PASSWORD="change_me"
+MANAGER_LOGIN_EMAIL="manager@hagink.local"
+MANAGER_LOGIN_PASSWORD="change_me"
+NEXT_PUBLIC_MANAGEMENT_ONLY="true"
 STRIPE_SECRET_KEY="sk_test_replace_me"
 STRIPE_WEBHOOK_SECRET="whsec_replace_me"
 ```
@@ -220,6 +226,40 @@ Then open `http://localhost:3000`.
 | `http://localhost:3000/client` | Public client experience |
 | `http://localhost:3000/ceo/products` | CEO product analytics |
 | `http://localhost:3000/manager/products` | Manager product operations |
+| `http://localhost:3000/login` | Management login portal |
+| `http://localhost:3000/login/ceo` | CEO/Admin login |
+| `http://localhost:3000/login/manager` | Manager login |
+
+## Management-only release mode
+
+For the current delivery phase you can publish only the management workspace (CEO + Manager) while keeping the public client site unavailable.
+
+- Set `NEXT_PUBLIC_MANAGEMENT_ONLY=true`.
+- Configure one of these authentication sources:
+  - explicit environment credentials (`CEO_LOGIN_*`, `MANAGER_LOGIN_*`), or
+  - database-backed `User` records with matching role/email/password.
+- Use `/login/ceo` and `/login/manager` for separate role access.
+- `/client`, `/plans`, `/api/payments/*`, and `/api/subscriptions/*` are blocked in management-only mode.
+
+### Vercel quick publish
+
+1. Import the repository in Vercel.
+2. Add all environment variables from the `.env` template.
+3. Ensure `DATABASE_URL` points to your production PostgreSQL (for example Neon).
+4. Deploy.
+5. Run migrations against production DB: `npx prisma migrate deploy`.
+6. Verify login routes and dashboards:
+   - `/login/ceo` → `/ceo`
+   - `/login/manager` → `/manager`
+
+### Render quick publish
+
+1. Create a new Web Service from this repository.
+2. Build command: `npm install && npm run build`.
+3. Start command: `npm run start`.
+4. Add the same environment variables (`DATABASE_URL`, auth vars, management mode).
+5. Run migrations in Render shell: `npx prisma migrate deploy`.
+6. Validate CEO/Manager login and route protection.
 
 ## Commands and verification
 
@@ -250,7 +290,7 @@ At the time this README was written:
 | PostgreSQL enterprise model | Implemented | Schema covers customers, booking, products, invoices, expenses, and lottery. |
 | Membership persistence | Implemented | Atomic client-plan activation and ticket creation; non-destructive development seed is available. |
 | Manager service persistence | Not implemented | UI exists; its API route is missing. |
-| Authentication and role authorization | Not implemented | Roles are in the schema only; routes are currently public. |
+| Authentication and role authorization (management workspace) | Implemented | JWT cookie sessions with role checks protect `/ceo`, `/manager`, and matching APIs. Separate login routes are available for CEO and Manager. |
 | Booking and calendar | Data-model ready | No booking API or client flow yet. |
 | Stock operations and invoicing | Data-model ready | No UI/API workflow yet. |
 | ROBUST IA business-growth engine | Planned | No AI provider, prompt workflow, prediction model, or API is in this repository yet. |
@@ -270,7 +310,7 @@ At the time this README was written:
 ## Security and production notes
 
 - Never commit `.env` or database credentials.
-- Store user passwords only as strong hashes; authentication has not been implemented yet.
+- Current management login supports env-based credentials and database fallback credentials. Move to hashed passwords before public, multi-user rollout.
 - Enforce roles on the server, not only in the UI.
 - Validate all request bodies and authorization before creating services, expenses, invoices, appointments, or subscriptions.
 - Use integer minor currency units or a decimal database type for production financial calculations; the current implementation uses JavaScript `number`/Prisma `Float`.

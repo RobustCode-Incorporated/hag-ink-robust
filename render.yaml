@@ -1,0 +1,25 @@
+services:
+  - type: web
+    name: hag-ink-robust-management
+    runtime: node
+    plan: starter
+    autoDeploy: true
+    buildCommand: npm install && npm run build
+    startCommand: npm run start
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: NEXT_PUBLIC_MANAGEMENT_ONLY
+        value: "true"
+      - key: DATABASE_URL
+        sync: false
+      - key: AUTH_JWT_SECRET
+        sync: false
+      - key: CEO_LOGIN_EMAIL
+        sync: false
+      - key: CEO_LOGIN_PASSWORD
+        sync: false
+      - key: MANAGER_LOGIN_EMAIL
+        sync: false
+      - key: MANAGER_LOGIN_PASSWORD
+        sync: false

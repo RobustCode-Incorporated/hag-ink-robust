@@ -2,6 +2,7 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from 'next/link';
 import { usePathname } from "next/navigation";
+import { useRouter } from 'next/navigation';
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -9,12 +10,19 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // Récupération de l'URL actuelle
+  const router = useRouter();
   const pathname = usePathname();
   // On vérifie si l'utilisateur se trouve sur le portail client ou sur la page de connexion
   const isClientPage = pathname?.startsWith('/client');
   const isLoginPage = pathname?.startsWith('/login');
 
   const hideNav = isClientPage || isLoginPage;
+
+  const logout = async () => {
+    await fetch('/api/auth/logout', { method: 'POST' });
+    router.push('/login');
+    router.refresh();
+  };
 
   const menuItems = [
     { id: 'coupes', label: 'Accueil' },
@@ -89,7 +97,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 );
               })}
 
-              <button className="px-4 py-1.5 border border-gray-700 rounded-full text-[10px] uppercase hover:bg-white hover:text-black transition-all">
+              <button onClick={logout} className="px-4 py-1.5 border border-gray-700 rounded-full text-[10px] uppercase hover:bg-white hover:text-black transition-all">
                 Déconnexion
               </button>
             </nav>
