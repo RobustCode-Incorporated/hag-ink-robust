@@ -55,6 +55,8 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isPublicRoute(pathname)) {
+    if (pathname === '/api/auth/logout') return NextResponse.next();
+
     const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
     if (!token) return NextResponse.next();
 

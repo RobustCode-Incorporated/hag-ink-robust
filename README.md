@@ -121,6 +121,7 @@ Key records include:
 | `/api/payments/webhook` | `POST` | Verifies Stripe events and activates paid memberships. | Requires `STRIPE_WEBHOOK_SECRET`. |
 | `/api/barbers` | `GET`/`POST` | Lists barbers and creates new barber records. | Implemented. |
 | `/api/cleaners` | `GET`/`POST` | Lists cleaners and creates new cleaner records. | Implemented. |
+| `/api/auth/logout` | `POST` | Clears the management session cookie. | Implemented; middleware now always allows this route so authenticated logout is never redirected as `POST /ceo` (`405`). |
 | `/api/services/create` | `POST` | Intended manager service-entry endpoint. | Referenced by the manager UI, not implemented. |
 
 ### Important database migration note
@@ -240,6 +241,7 @@ For the current delivery phase you can publish only the management workspace (CE
   - database-backed `User` records with matching role/email/password.
 - Use `/login/ceo` and `/login/manager` for separate role access.
 - `/client`, `/plans`, `/api/payments/*`, and `/api/subscriptions/*` are blocked in management-only mode.
+- `POST /api/auth/logout` remains accessible while authenticated so "Déconnexion" cannot be redirected to role home with the `POST` method.
 
 ### Vercel quick publish
 
@@ -272,6 +274,7 @@ For the current delivery phase you can publish only the management workspace (CE
 | `npm run db:seed` | Upserts the local development catalogue and dashboard fixtures. |
 | `npm run db:validate` | Validates the Prisma schema. |
 | `npx vitest run` | Runs domain unit tests. |
+| `npx vitest run middleware.test.ts` | Runs middleware regression tests, including logout-route behavior. |
 
 At the time this README was written:
 
