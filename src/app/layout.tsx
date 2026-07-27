@@ -19,9 +19,12 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   const hideNav = isClientPage || isLoginPage;
 
   const logout = async () => {
-    await fetch('/api/auth/logout', { method: 'POST' });
-    router.push('/login');
-    router.refresh();
+    try {
+      await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
+    } finally {
+      router.replace('/login');
+      router.refresh();
+    }
   };
 
   const menuItems = [
@@ -91,13 +94,13 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                   );
                 }
                 return (
-                  <button key={item.id} className="text-gray-400 hover:text-white text-xs uppercase transition-colors">
+                  <button type="button" key={item.id} className="text-gray-400 hover:text-white text-xs uppercase transition-colors">
                     {item.label}
                   </button>
                 );
               })}
 
-              <button onClick={logout} className="px-4 py-1.5 border border-gray-700 rounded-full text-[10px] uppercase hover:bg-white hover:text-black transition-all">
+              <button type="button" onClick={logout} className="px-4 py-1.5 border border-gray-700 rounded-full text-[10px] uppercase hover:bg-white hover:text-black transition-all">
                 Déconnexion
               </button>
             </nav>
