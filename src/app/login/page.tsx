@@ -13,6 +13,7 @@ export default function LoginPortalPage() {
         <div className="mt-10 grid gap-6 md:grid-cols-2">
           <Link
             href="/login/ceo"
+            prefetch={false}
             className="block rounded-2xl border border-neutral-800 bg-neutral-950 p-8 hover:border-white transition-colors"
           >
             <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Acces administrateur</p>
@@ -22,6 +23,7 @@ export default function LoginPortalPage() {
 
           <Link
             href="/login/manager"
+            prefetch={false}
             className="block rounded-2xl border border-neutral-800 bg-neutral-950 p-8 hover:border-white transition-colors"
           >
             <p className="text-xs uppercase tracking-[0.2em] text-neutral-500">Acces operationnel</p>

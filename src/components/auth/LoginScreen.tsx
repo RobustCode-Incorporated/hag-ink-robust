@@ -102,6 +102,7 @@ export default function LoginScreen({ role }: Props) {
           <Link href="/login" className="hover:text-white transition-colors">Portail login</Link>
           <Link
             href={role === 'CEO' ? '/login/manager' : '/login/ceo'}
+            prefetch={false}
             className="hover:text-white transition-colors"
           >
             {role === 'CEO' ? 'Login Manager' : 'Login Admin'}
