@@ -81,7 +81,7 @@ export default function CEOProductsPage() {
   };
 
   return (
-    <div className="min-h-screen bg-slate-50 p-8 text-slate-900">
+    <div className="min-h-screen bg-white p-8 text-slate-900">
       <div className="mb-6">
         <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Espace CEO</p>
         <h1 className="text-2xl font-black mb-2">Produits</h1>
