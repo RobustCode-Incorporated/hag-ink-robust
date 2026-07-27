@@ -183,6 +183,7 @@ CEO_LOGIN_PASSWORD="change_me"
 MANAGER_LOGIN_EMAIL="manager@hagink.local"
 MANAGER_LOGIN_PASSWORD="change_me"
 NEXT_PUBLIC_MANAGEMENT_ONLY="true"
+NEXT_PUBLIC_CUSTOM_DOMAIN="www.hag-ink.com"
 STRIPE_SECRET_KEY="sk_test_replace_me"
 STRIPE_WEBHOOK_SECRET="whsec_replace_me"
 ```
@@ -230,6 +231,19 @@ Then open `http://localhost:3000`.
 | `http://localhost:3000/login/ceo` | CEO/Admin login |
 | `http://localhost:3000/login/manager` | Manager login |
 
+### Custom domain routing (`www.hag-ink.com`)
+
+The middleware now treats `www.hag-ink.com` (and `hag-ink.com`) as a custom production domain:
+
+- `https://www.hag-ink.com/` redirects automatically to:
+  - `/ceo` for an authenticated CEO session
+  - `/manager` for an authenticated manager session
+  - `/client` for visitors without a session (or `/login` when management-only mode is enabled)
+- Direct routes are preserved:
+  - `https://www.hag-ink.com/client`
+  - `https://www.hag-ink.com/ceo`
+  - `https://www.hag-ink.com/manager`
+
 ## Management-only release mode
 
 For the current delivery phase you can publish only the management workspace (CEO + Manager) while keeping the public client site unavailable.
@@ -248,7 +262,8 @@ For the current delivery phase you can publish only the management workspace (CE
 3. Ensure `DATABASE_URL` points to your production PostgreSQL (for example Neon).
 4. Deploy.
 5. Run migrations against production DB: `npx prisma migrate deploy`.
-6. Verify login routes and dashboards:
+6. Add the custom domain in Vercel: `www.hag-ink.com` (optionally add apex `hag-ink.com` and redirect to `www` at DNS/provider level).
+7. Verify login routes and dashboards:
    - `/login/ceo` → `/ceo`
    - `/login/manager` → `/manager`
 
@@ -258,8 +273,9 @@ For the current delivery phase you can publish only the management workspace (CE
 2. Build command: `npm install && npm run build`.
 3. Start command: `npm run start`.
 4. Add the same environment variables (`DATABASE_URL`, auth vars, management mode).
-5. Run migrations in Render shell: `npx prisma migrate deploy`.
-6. Validate CEO/Manager login and route protection.
+5. Add your custom domain in Render: `www.hag-ink.com` (optionally add apex `hag-ink.com` and redirect to `www` at DNS/provider level).
+6. Run migrations in Render shell: `npx prisma migrate deploy`.
+7. Validate CEO/Manager login and route protection.
 
 ## Commands and verification
 
