@@ -81,24 +81,24 @@ export default function CEOProductsPage() {
   };
 
   return (
-    <div className="p-8">
+    <div className="min-h-screen bg-slate-50 p-8 text-slate-900">
       <div className="mb-6">
         <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Espace CEO</p>
         <h1 className="text-2xl font-black mb-2">Produits</h1>
-        <p className="text-sm text-slate-500">Analyse produit: valorisation du stock, top sellers, et création de nouveaux produits.</p>
+        <p className="text-sm text-slate-600">Analyse produit: valorisation du stock, top sellers, et création de nouveaux produits.</p>
       </div>
 
       <div className="grid gap-4 md:grid-cols-3 mb-6">
         <div className="rounded-lg border bg-white p-4">
-          <p className="text-xs uppercase text-slate-400">Valeur du stock</p>
+          <p className="text-xs uppercase text-slate-500">Valeur du stock</p>
           <p className="text-xl font-bold mt-2">€{totalStockValue.toFixed(2)}</p>
         </div>
         <div className="rounded-lg border bg-white p-4">
-          <p className="text-xs uppercase text-slate-400">Articles en stock</p>
+          <p className="text-xs uppercase text-slate-500">Articles en stock</p>
           <p className="text-xl font-bold mt-2">{products ? products.length : '—'}</p>
         </div>
         <div className="rounded-lg border bg-white p-4">
-          <p className="text-xs uppercase text-slate-400">Consommables</p>
+          <p className="text-xs uppercase text-slate-500">Consommables</p>
           <p className="text-xl font-bold mt-2">{products ? products.filter((p) => p.isConsumable).length : '—'}</p>
         </div>
       </div>
@@ -131,7 +131,7 @@ export default function CEOProductsPage() {
                 Produit consommable
               </label>
             </div>
-            {productMessage && <p className="text-sm text-slate-600">{productMessage}</p>}
+            {productMessage && <p className="text-sm text-slate-700">{productMessage}</p>}
             <button disabled={savingProduct} className="mt-2 w-full rounded-lg bg-slate-950 p-3 text-white font-bold disabled:opacity-60">
               {savingProduct ? 'Création en cours…' : 'Créer le produit'}
             </button>
@@ -144,7 +144,7 @@ export default function CEOProductsPage() {
         <h2 className="font-semibold">Top produits (par quantité)</h2>
         <div className="mt-4">
           {loadingProducts ? (
-            <p className="text-sm text-slate-500">Chargement des produits...</p>
+            <p className="text-sm text-slate-600">Chargement des produits...</p>
           ) : products && products.length > 0 ? (
             <ul className="space-y-2">
               {products
@@ -159,7 +159,7 @@ export default function CEOProductsPage() {
                 ))}
             </ul>
           ) : (
-            <p className="text-sm text-slate-500">Données produit non disponibles. Connecter `/api/products`.</p>
+            <p className="text-sm text-slate-600">Données produit non disponibles. Connecter `/api/products`.</p>
           )}
         </div>
       </section>

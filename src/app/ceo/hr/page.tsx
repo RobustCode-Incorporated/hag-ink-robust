@@ -80,15 +80,15 @@ export default function CEOHRPage() {
   };
 
   if (loading) {
-    return <div className="p-8 text-slate-700">Chargement des ressources humaines...</div>;
+    return <div className="min-h-screen bg-slate-50 p-8 text-slate-700">Chargement des ressources humaines...</div>;
   }
 
   return (
-    <div className="p-8">
+    <div className="min-h-screen bg-slate-50 p-8 text-slate-900">
       <div className="mb-8">
         <p className="text-xs font-bold uppercase tracking-widest text-slate-400">Espace CEO</p>
         <h1 className="text-2xl font-black">Ressources Humaines</h1>
-        <p className="text-sm text-slate-500">Liste du personnel et création de collaborateurs par rôle.</p>
+        <p className="text-sm text-slate-600">Liste du personnel et création de collaborateurs par rôle.</p>
       </div>
 
       <div className="grid gap-6 xl:grid-cols-2 mb-8">
@@ -98,11 +98,11 @@ export default function CEOHRPage() {
             {barbers.map(barber => (
               <div key={barber.id} className="rounded-xl border p-4">
                 <p className="font-semibold">{barber.firstName} {barber.lastName}</p>
-                <p className="text-sm text-slate-500">Tel: {barber.phone ?? 'non renseigné'}</p>
-                <p className="text-sm text-slate-500">Commission: {Math.round(barber.commissionRate * 100)}%</p>
+                <p className="text-sm text-slate-600">Tel: {barber.phone ?? 'non renseigné'}</p>
+                <p className="text-sm text-slate-600">Commission: {Math.round(barber.commissionRate * 100)}%</p>
               </div>
             ))}
-            {barbers.length === 0 && <p className="text-sm text-slate-500">Aucun barbier enregistré.</p>}
+            {barbers.length === 0 && <p className="text-sm text-slate-600">Aucun barbier enregistré.</p>}
           </div>
         </section>
 
@@ -113,10 +113,10 @@ export default function CEOHRPage() {
               {cleaners.map(cleaner => (
                 <div key={cleaner.id} className="rounded-xl border p-4">
                   <p className="font-semibold">{cleaner.email}</p>
-                  <p className="text-sm text-slate-500">Role: {cleaner.role}</p>
+                  <p className="text-sm text-slate-600">Role: {cleaner.role}</p>
                 </div>
               ))}
-              {cleaners.length === 0 && <p className="text-sm text-slate-500">Aucun cleaner enregistré.</p>}
+              {cleaners.length === 0 && <p className="text-sm text-slate-600">Aucun cleaner enregistré.</p>}
             </div>
           </section>
 
@@ -173,7 +173,7 @@ export default function CEOHRPage() {
                 </>
               )}
 
-              {message && <p className="text-sm text-slate-600">{message}</p>}
+              {message && <p className="text-sm text-slate-700">{message}</p>}
               <button disabled={saving} className="mt-2 w-full rounded-lg bg-slate-950 p-3 text-white font-bold disabled:opacity-60">
                 {saving ? 'Enregistrement en cours…' : `Créer ${staffRole.toLowerCase()}`}
               </button>
