@@ -8,16 +8,29 @@ import {
 } from "lucide-react";
 import Image from "next/image";
 import { Black_Ops_One } from "next/font/google";
-import { useState } from "react";
+import { FormEvent, useState } from "react";
 import SlideOver from "@/components/SlideOver";
 
 const blackOpsOne = Black_Ops_One({ weight: '400', subsets: ['latin'] });
 
 export default function ClientPage() {
   const [selectedPlan, setSelectedPlan] = useState<{ code: string; name: string; price: number } | null>(null);
+  const [isBookingOpen, setIsBookingOpen] = useState(false);
   const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', email: '' });
+  const [bookingForm, setBookingForm] = useState({
+    firstName: '',
+    lastName: '',
+    phone: '',
+    serviceType: 'COIFFURE',
+    date: '',
+    time: '',
+    notes: '',
+  });
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [bookingError, setBookingError] = useState<string | null>(null);
+  const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
   const memberships = [
     { code: "STANDARD_ENFANT", name: "Standard Enfant", target: "Enfants", value: 50, price: 49, desc: "Jusqu’à 5 coiffures (minimum conseillé : 3)", perks: ["Flexibilité totale", "Accès à la loterie"] },
     { code: "STANDARD_ADULTE", name: "Standard Adulte", target: "Hommes / Femmes", value: 100, price: 89, desc: "Jusqu’à 5 coiffures (minimum conseillé : 3)", perks: ["11$ d'économie", "Accès VIP au programme fidélité"] },
@@ -27,7 +40,7 @@ export default function ClientPage() {
     { code: "LOCKS_B", name: "Locks B", target: "Locks Premium", value: 350, price: 329, desc: "Jusqu’à 5 prestations", perks: ["Économie majeure", "Service ultra-prioritaire"] },
   ];
 
-  const startCheckout = async (event: React.FormEvent<HTMLFormElement>) => {
+  const startCheckout = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!selectedPlan) return;
     setCheckoutError(null); setIsSubmitting(true);
@@ -38,6 +51,32 @@ export default function ClientPage() {
       window.location.assign(data.url);
     } catch (error) { setCheckoutError(error instanceof Error ? error.message : 'Une erreur est survenue.'); }
     finally { setIsSubmitting(false); }
+  };
+
+  const submitBooking = async (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    setBookingError(null);
+    setBookingSuccess(null);
+    setIsBookingSubmitting(true);
+
+    try {
+      const response = await fetch('/api/appointments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(bookingForm),
+      });
+      const data: { whatsappUrl?: string; error?: string; message?: string } = await response.json();
+      if (!response.ok) throw new Error(data.error ?? 'Impossible de créer la réservation.');
+
+      setBookingSuccess(data.message ?? 'Réservation enregistrée. Redirection vers WhatsApp...');
+      if (data.whatsappUrl) {
+        window.location.assign(data.whatsappUrl);
+      }
+    } catch (error) {
+      setBookingError(error instanceof Error ? error.message : 'Une erreur est survenue.');
+    } finally {
+      setIsBookingSubmitting(false);
+    }
   };
 
   const minorPrizes = [
@@ -86,7 +125,7 @@ export default function ClientPage() {
               HAG <span className="text-neutral-500">&</span> INK
             </h1>
             <p className="text-lg md:text-xl text-neutral-400 font-light max-w-2xl mx-auto mb-10">
-              L'élégance du détail. L'art dans la peau. Bienvenue dans l'élite du lifestyle urbain.
+              L&apos;élégance du détail. L&apos;art dans la peau. Bienvenue dans l&apos;élite du lifestyle urbain.
             </p>
           </motion.div>
 
@@ -96,7 +135,7 @@ export default function ClientPage() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
           >
-            <button className="px-8 py-4 bg-white text-black font-bold uppercase tracking-wider rounded-sm transition-all hover:bg-neutral-200 flex items-center justify-center gap-2">
+            <button onClick={() => setIsBookingOpen(true)} className="px-8 py-4 bg-white text-black font-bold uppercase tracking-wider rounded-sm transition-all hover:bg-neutral-200 flex items-center justify-center gap-2">
               <Calendar className="w-5 h-5" />
               Réserver un créneau
             </button>
@@ -183,7 +222,7 @@ export default function ClientPage() {
                 <h3 className="text-3xl md:text-4xl font-black text-white uppercase tracking-wide mb-4 flex items-center gap-3">
                   Limited Edition <Star className="w-6 h-6 text-yellow-500 fill-yellow-500/20" />
                 </h3>
-                <p className="text-neutral-400 text-lg">Coiffures illimitées dans la limite de 5 visites. Avantages exclusifs et 2 tickets d'office pour la grande loterie.</p>
+                 <p className="text-neutral-400 text-lg">Coiffures illimitées dans la limite de 5 visites. Avantages exclusifs et 2 tickets d&apos;office pour la grande loterie.</p>
              </div>
              
              <div className="relative z-10 flex flex-col items-start md:items-end shrink-0 w-full md:w-auto">
@@ -272,6 +311,80 @@ export default function ClientPage() {
 </motion.div>
   </div>
 </section>
+
+      <SlideOver isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} title="Réserver une séance">
+        <form onSubmit={submitBooking} className="space-y-5">
+          <p className="text-sm text-neutral-400">
+            Choisis une date, une heure et le type de séance. Après validation, tu es redirigé vers WhatsApp du salon avec toutes les informations pré-remplies.
+          </p>
+
+          {[['firstName', 'Prénom'], ['lastName', 'Nom'], ['phone', 'Téléphone']].map(([field, label]) => (
+            <label key={field} className="block text-sm text-neutral-300">
+              {label}
+              <input
+                required
+                type="text"
+                value={bookingForm[field as 'firstName' | 'lastName' | 'phone']}
+                onChange={(event) => setBookingForm({ ...bookingForm, [field]: event.target.value })}
+                className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white"
+              />
+            </label>
+          ))}
+
+          <label className="block text-sm text-neutral-300">
+            Type de séance
+            <select
+              value={bookingForm.serviceType}
+              onChange={(event) => setBookingForm({ ...bookingForm, serviceType: event.target.value })}
+              className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white"
+            >
+              <option value="COIFFURE">Coiffure</option>
+              <option value="TATOUAGE">Tatouage</option>
+            </select>
+          </label>
+
+          <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
+            <label className="block text-sm text-neutral-300">
+              Date
+              <input
+                required
+                type="date"
+                value={bookingForm.date}
+                onChange={(event) => setBookingForm({ ...bookingForm, date: event.target.value })}
+                className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white"
+              />
+            </label>
+            <label className="block text-sm text-neutral-300">
+              Heure
+              <input
+                required
+                type="time"
+                value={bookingForm.time}
+                onChange={(event) => setBookingForm({ ...bookingForm, time: event.target.value })}
+                className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white"
+              />
+            </label>
+          </div>
+
+          <label className="block text-sm text-neutral-300">
+            Notes (facultatif)
+            <textarea
+              rows={3}
+              value={bookingForm.notes}
+              onChange={(event) => setBookingForm({ ...bookingForm, notes: event.target.value })}
+              className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white"
+              placeholder="Style souhaité, référence, contraintes horaires..."
+            />
+          </label>
+
+          {bookingError && <p role="alert" className="text-sm text-red-400">{bookingError}</p>}
+          {bookingSuccess && <p className="text-sm text-emerald-400">{bookingSuccess}</p>}
+
+          <button disabled={isBookingSubmitting} type="submit" className="w-full bg-white px-4 py-4 font-bold uppercase tracking-wider text-black disabled:opacity-60">
+            {isBookingSubmitting ? 'Envoi en cours…' : 'Envoyer la réservation sur WhatsApp'}
+          </button>
+        </form>
+      </SlideOver>
 
       <SlideOver isOpen={selectedPlan !== null} onClose={() => setSelectedPlan(null)} title="Finaliser votre membership">
         {selectedPlan && <form onSubmit={startCheckout} className="space-y-5">

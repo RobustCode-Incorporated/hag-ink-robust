@@ -7,7 +7,7 @@ import {
   type AuthRole,
 } from '@/lib/auth';
 
-const CLIENT_BLOCKED_PREFIXES = ['/client', '/plans', '/api/payments', '/api/subscriptions'];
+const CLIENT_BLOCKED_PREFIXES = ['/client', '/plans', '/api/payments', '/api/subscriptions', '/api/appointments'];
 const SHARED_MANAGEMENT_API_PREFIXES = ['/api/services', '/api/expenses', '/api/barbers', '/api/cleaners', '/api/products', '/api/users'];
 const CUSTOM_DOMAIN_HOSTS = new Set(
   [process.env.NEXT_PUBLIC_CUSTOM_DOMAIN, 'www.hag-ink.com', 'hag-ink.com']
