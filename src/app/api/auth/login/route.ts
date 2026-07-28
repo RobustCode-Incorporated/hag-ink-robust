@@ -1,12 +1,10 @@
 import { NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
+import { compare } from 'bcryptjs';
 import {
   createSessionToken,
   SESSION_COOKIE_NAME,
   SESSION_TTL_SECONDS,
-  type AuthRole,
   roleHome,
 } from '@/lib/auth';
 
@@ -16,20 +14,6 @@ type LoginBody = {
   password: unknown;
   role: unknown;
 };
-
-function getEnvCredentials(role: AuthRole): { email: string; password: string } | null {
-  if (role === 'CEO') {
-    const email = process.env.CEO_LOGIN_EMAIL;
-    const password = process.env.CEO_LOGIN_PASSWORD;
-    if (!email || !password) return null;
-    return { email, password };
-  }
-
-  const email = process.env.MANAGER_LOGIN_EMAIL;
-  const password = process.env.MANAGER_LOGIN_PASSWORD;
-  if (!email || !password) return null;
-  return { email, password };
-}
 
 export async function POST(request: Request) {
   try {
@@ -42,20 +26,14 @@ export async function POST(request: Request) {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedPassword = password.trim();
 
-    let isValid = false;
-    const envCredentials = getEnvCredentials(role);
-    if (envCredentials) {
-      isValid = normalizedEmail === envCredentials.email.trim().toLowerCase() && normalizedPassword === envCredentials.password;
-    } else {
-      const user = await prisma.user.findFirst({
-        where: {
-          role,
-          email: normalizedEmail,
-          password: normalizedPassword,
-        },
-      });
-      isValid = Boolean(user);
-    }
+    const user = await prisma.user.findFirst({
+      where: {
+        role,
+        email: normalizedEmail,
+      },
+    });
+
+    const isValid = user ? await compare(normalizedPassword, user.password) : false;
 
     if (!isValid) {
       return NextResponse.json({ error: 'Identifiants invalides.' }, { status: 401 });

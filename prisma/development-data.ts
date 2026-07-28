@@ -8,6 +8,21 @@ export const DEVELOPMENT_CLIENT = {
   email: 'jeanluc.luz@robustcode.dev',
 };
 
+export const DEVELOPMENT_MANAGEMENT_USERS = [
+  {
+    id: '86b21e1b-2c12-47db-8a60-dabeeaeba7fb',
+    email: 'admin@hagink.local',
+    password: 'change_me',
+    role: 'CEO' as const,
+  },
+  {
+    id: '92890da1-7466-43e6-8c49-e1d97acb99a0',
+    email: 'manager@hagink.local',
+    password: 'change_me',
+    role: 'MANAGER' as const,
+  },
+];
+
 export const DEVELOPMENT_PLANS: Array<{
   id: string;
   name: PlanName;

@@ -1,7 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server';
 import prisma from '@/lib/prisma';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
+import { randomUUID } from 'node:crypto';
+import { hash } from 'bcryptjs';
+
+const PASSWORD_SALT_ROUNDS = 12;
 
 
 export async function POST(request: NextRequest) {
@@ -36,10 +38,12 @@ export async function POST(request: NextRequest) {
         return NextResponse.json({ error: 'email, password and phone are required for managers.' }, { status: 400 });
       }
 
+      const hashedPassword = await hash(password, PASSWORD_SALT_ROUNDS);
+
       const manager = await prisma.user.create({
         data: {
           email,
-          password,
+          password: hashedPassword,
           role: 'MANAGER',
         },
       });
@@ -60,7 +64,7 @@ export async function POST(request: NextRequest) {
       const cleaner = await prisma.user.create({
         data: {
           email: effectiveEmail,
-          password: '',
+          password: await hash(randomUUID(), PASSWORD_SALT_ROUNDS),
           role: 'CLEANER',
         },
       });
@@ -88,7 +92,7 @@ export async function POST(request: NextRequest) {
           user: {
             create: {
               email,
-              password: '',
+              password: await hash(randomUUID(), PASSWORD_SALT_ROUNDS),
               role: 'BARBER',
             },
           },

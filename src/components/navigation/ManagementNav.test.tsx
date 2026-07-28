@@ -11,6 +11,13 @@ vi.mock('next/link', () => ({
 }));
 
 describe('ManagementNav integration', () => {
+  it('renders logout as a non-submit button', () => {
+    render(<ManagementNav role="CEO" onLogout={() => undefined} />);
+
+    const logoutButton = screen.getByRole('button', { name: 'Deconnexion' });
+    expect(logoutButton).toHaveAttribute('type', 'button');
+  });
+
   it('opens the exact CEO destinations on each tab click', () => {
     render(<ManagementNav role="CEO" onLogout={() => undefined} />);
 

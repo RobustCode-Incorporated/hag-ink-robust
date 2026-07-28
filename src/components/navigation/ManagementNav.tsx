@@ -18,7 +18,7 @@ export default function ManagementNav({ role, onLogout }: Props) {
         </Link>
       ))}
 
-      <button onClick={onLogout} className="px-4 py-1.5 border border-gray-700 rounded-full text-[10px] uppercase hover:bg-white hover:text-black transition-all">
+      <button type="button" onClick={onLogout} className="px-4 py-1.5 border border-gray-700 rounded-full text-[10px] uppercase hover:bg-white hover:text-black transition-all">
         Deconnexion
       </button>
     </nav>

@@ -9,6 +9,7 @@
     "lint": "eslint",
     "test": "vitest",
     "db:seed": "prisma db seed",
+    "db:migrate-passwords": "tsx prisma/hash_passwords.ts",
     "db:validate": "prisma validate",
     "db:cleanup-import": "tsx prisma/cleanup_import.ts"
   },

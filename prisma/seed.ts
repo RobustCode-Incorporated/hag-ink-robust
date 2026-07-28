@@ -1,14 +1,18 @@
 import 'dotenv/config';
-import { PrismaClient } from '@prisma/client';
+import { PrismaClient } from '../generated/prisma/client';
 import { PrismaPg } from '@prisma/adapter-pg';
 import pg from 'pg';
+import { hash } from 'bcryptjs';
 import {
   DEVELOPMENT_BARBERS,
   DEVELOPMENT_CLIENT,
   DEVELOPMENT_EXPENSES,
+  DEVELOPMENT_MANAGEMENT_USERS,
   DEVELOPMENT_PLANS,
   DEVELOPMENT_SERVICES,
 } from './development-data';
+
+const PASSWORD_SALT_ROUNDS = 12;
 
 if (!process.env.DATABASE_URL) {
   throw new Error('DATABASE_URL est obligatoire pour exécuter le seed de développement.');
@@ -19,6 +23,20 @@ const prisma = new PrismaClient({ adapter: new PrismaPg(pool) });
 
 async function main() {
   await prisma.$transaction(async (transaction) => {
+    for (const user of DEVELOPMENT_MANAGEMENT_USERS) {
+      await transaction.user.upsert({
+        where: { email: user.email },
+        create: {
+          ...user,
+          password: await hash(user.password, PASSWORD_SALT_ROUNDS),
+        },
+        update: {
+          password: await hash(user.password, PASSWORD_SALT_ROUNDS),
+          role: user.role,
+        },
+      });
+    }
+
     for (const plan of DEVELOPMENT_PLANS) {
       await transaction.plan.upsert({
         where: { id: plan.id },
@@ -63,7 +81,7 @@ async function main() {
     }
   });
 
-  console.log('Development data is ready: plans, client, barbers, services, and expenses were upserted.');
+  console.log('Development data is ready: management users, plans, client, barbers, services, and expenses were upserted.');
 }
 
 main()
