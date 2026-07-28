@@ -10,11 +10,13 @@ import Image from "next/image";
 import { Black_Ops_One } from "next/font/google";
 import { useState } from "react";
 import SlideOver from "@/components/SlideOver";
+import BookingSlideOver from "@/components/BookingSlideOver";
 
 const blackOpsOne = Black_Ops_One({ weight: '400', subsets: ['latin'] });
 
 export default function ClientPage() {
   const [selectedPlan, setSelectedPlan] = useState<{ code: string; name: string; price: number } | null>(null);
+  const [bookingOpen, setBookingOpen] = useState(false);
   const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', email: '' });
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -96,7 +98,7 @@ export default function ClientPage() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
           >
-            <button className="px-8 py-4 bg-white text-black font-bold uppercase tracking-wider rounded-sm transition-all hover:bg-neutral-200 flex items-center justify-center gap-2">
+            <button onClick={() => setBookingOpen(true)} className="px-8 py-4 bg-white text-black font-bold uppercase tracking-wider rounded-sm transition-all hover:bg-neutral-200 flex items-center justify-center gap-2">
               <Calendar className="w-5 h-5" />
               Réserver un créneau
             </button>
@@ -272,6 +274,8 @@ export default function ClientPage() {
 </motion.div>
   </div>
 </section>
+
+      <BookingSlideOver isOpen={bookingOpen} onClose={() => setBookingOpen(false)} />
 
       <SlideOver isOpen={selectedPlan !== null} onClose={() => setSelectedPlan(null)} title="Finaliser votre membership">
         {selectedPlan && <form onSubmit={startCheckout} className="space-y-5">
