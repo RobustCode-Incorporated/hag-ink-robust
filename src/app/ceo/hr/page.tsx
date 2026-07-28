@@ -174,7 +174,7 @@ export default function CEOHRPage() {
               )}
 
               {message && <p className="text-sm text-slate-600">{message}</p>}
-              <button disabled={saving} className="mt-2 w-full rounded-lg bg-slate-950 p-3 text-white font-bold disabled:opacity-60">
+              <button type="submit" disabled={saving} className="mt-2 w-full rounded-lg bg-slate-950 p-3 text-white font-bold disabled:opacity-60">
                 {saving ? 'Enregistrement en cours…' : `Créer ${staffRole.toLowerCase()}`}
               </button>
             </form>

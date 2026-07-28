@@ -20,7 +20,7 @@ export default function ThemeToggle() {
   if (!mounted) return null;
 
   return (
-    <button onClick={toggle} className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition-all text-sm">
+    <button type="button" onClick={toggle} className="p-2 rounded-full bg-gray-800 hover:bg-gray-700 transition-all text-sm">
       {isDark ? '☀️' : '🌙'}
     </button>
   );

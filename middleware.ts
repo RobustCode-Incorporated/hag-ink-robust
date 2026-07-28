@@ -55,6 +55,15 @@ export async function middleware(request: NextRequest) {
   const { pathname, hostname } = request.nextUrl;
   const normalizedHostname = hostname.toLowerCase();
 
+  const isManagementPage = startsWithPath(pathname, '/ceo') || startsWithPath(pathname, '/manager');
+  const isNextServerAction = request.headers.has('next-action');
+
+  // Safety net: if a native HTML form accidentally posts to a management page,
+  // convert it to a GET navigation instead of returning 405.
+  if (request.method === 'POST' && isManagementPage && !isApiRoute(pathname) && !isNextServerAction) {
+    return NextResponse.redirect(new URL(pathname, request.url), 303);
+  }
+
   if (pathname === '/' && CUSTOM_DOMAIN_HOSTS.has(normalizedHostname)) {
     const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
     if (!token) {

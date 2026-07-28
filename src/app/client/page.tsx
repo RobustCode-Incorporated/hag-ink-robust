@@ -135,11 +135,11 @@ export default function ClientPage() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
           >
-            <button onClick={() => setIsBookingOpen(true)} className="px-8 py-4 bg-white text-black font-bold uppercase tracking-wider rounded-sm transition-all hover:bg-neutral-200 flex items-center justify-center gap-2">
+            <button type="button" onClick={() => setIsBookingOpen(true)} className="px-8 py-4 bg-white text-black font-bold uppercase tracking-wider rounded-sm transition-all hover:bg-neutral-200 flex items-center justify-center gap-2">
               <Calendar className="w-5 h-5" />
               Réserver un créneau
             </button>
-            <button onClick={() => document.getElementById('memberships')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 bg-transparent text-white font-bold uppercase tracking-wider border border-neutral-700 rounded-sm transition-all hover:border-white hover:bg-white/5 flex items-center justify-center gap-2">
+            <button type="button" onClick={() => document.getElementById('memberships')?.scrollIntoView({ behavior: 'smooth' })} className="px-8 py-4 bg-transparent text-white font-bold uppercase tracking-wider border border-neutral-700 rounded-sm transition-all hover:border-white hover:bg-white/5 flex items-center justify-center gap-2">
               <Scissors className="w-5 h-5" />
               Voir les Memberships
             </button>
@@ -201,7 +201,7 @@ export default function ClientPage() {
                   </ul>
                 </div>
                 
-                <button onClick={() => setSelectedPlan(plan)} className="w-full py-4 bg-neutral-900 border border-neutral-700 text-white font-bold uppercase text-sm tracking-wider hover:bg-white hover:text-black transition-colors">
+                <button type="button" onClick={() => setSelectedPlan(plan)} className="w-full py-4 bg-neutral-900 border border-neutral-700 text-white font-bold uppercase text-sm tracking-wider hover:bg-white hover:text-black transition-colors">
                   Sélectionner
                 </button>
               </motion.div>
@@ -230,7 +230,7 @@ export default function ClientPage() {
                   <span className="text-5xl font-black text-white">229$</span>
                   <span className="text-xl text-neutral-600 line-through pb-1">≈250$</span>
                 </div>
-                <button onClick={() => setSelectedPlan({ code: 'LIMITED_EDITION', name: 'Limited Edition', price: 229 })} className="w-full md:w-auto px-10 py-4 bg-white text-black font-bold uppercase text-sm tracking-wider hover:bg-neutral-200 transition-colors">
+                <button type="button" onClick={() => setSelectedPlan({ code: 'LIMITED_EDITION', name: 'Limited Edition', price: 229 })} className="w-full md:w-auto px-10 py-4 bg-white text-black font-bold uppercase text-sm tracking-wider hover:bg-neutral-200 transition-colors">
                   Devenir VIP
                 </button>
              </div>

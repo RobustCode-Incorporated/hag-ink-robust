@@ -132,7 +132,7 @@ export default function CEOProductsPage() {
               </label>
             </div>
             {productMessage && <p className="text-sm text-slate-600">{productMessage}</p>}
-            <button disabled={savingProduct} className="mt-2 w-full rounded-lg bg-slate-950 p-3 text-white font-bold disabled:opacity-60">
+            <button type="submit" disabled={savingProduct} className="mt-2 w-full rounded-lg bg-slate-950 p-3 text-white font-bold disabled:opacity-60">
               {savingProduct ? 'Création en cours…' : 'Créer le produit'}
             </button>
           </form>

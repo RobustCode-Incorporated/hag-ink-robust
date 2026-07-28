@@ -19,7 +19,7 @@ export default function SlideOver({ isOpen, onClose, title, children }: any) {
           >
             <div className="flex justify-between items-center mb-8">
               <h2 className="text-lg font-bold text-white uppercase tracking-widest">{title}</h2>
-              <button onClick={onClose} className="p-2 hover:bg-neutral-900 rounded-full transition-colors">
+              <button type="button" onClick={onClose} className="p-2 hover:bg-neutral-900 rounded-full transition-colors">
                 <X className="w-5 h-5 text-neutral-400" />
               </button>
             </div>
