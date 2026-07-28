@@ -2,7 +2,6 @@
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from 'next/link';
 import { usePathname } from "next/navigation";
-import { useRouter } from 'next/navigation';
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -10,22 +9,12 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   // Récupération de l'URL actuelle
-  const router = useRouter();
   const pathname = usePathname();
   // On vérifie si l'utilisateur se trouve sur le portail client ou sur la page de connexion
   const isClientPage = pathname?.startsWith('/client');
   const isLoginPage = pathname?.startsWith('/login');
 
   const hideNav = isClientPage || isLoginPage;
-
-  const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
-    } finally {
-      router.replace('/login');
-      router.refresh();
-    }
-  };
 
   const menuItems = [
     { id: 'coupes', label: 'Accueil' },
@@ -93,16 +82,20 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                     </Link>
                   );
                 }
-                return (
-                  <button type="button" key={item.id} className="text-gray-400 hover:text-white text-xs uppercase transition-colors">
-                    {item.label}
-                  </button>
-                );
+                if (item.id === 'robust') {
+                  const href = pathname?.startsWith('/manager') ? '/manager/robust' : '/ceo/robust';
+                  return (
+                    <Link key={item.id} href={href} className="text-gray-400 hover:text-white text-xs uppercase transition-colors">
+                      {item.label}
+                    </Link>
+                  );
+                }
+                return null;
               })}
 
-              <button type="button" onClick={logout} className="px-4 py-1.5 border border-gray-700 rounded-full text-[10px] uppercase hover:bg-white hover:text-black transition-all">
+              <a href="/logout" className="px-4 py-1.5 border border-gray-700 rounded-full text-[10px] uppercase hover:bg-white hover:text-black transition-all">
                 Déconnexion
-              </button>
+              </a>
             </nav>
           </header>
         )}
