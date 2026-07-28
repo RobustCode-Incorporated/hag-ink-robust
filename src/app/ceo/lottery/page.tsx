@@ -20,6 +20,18 @@ type WinnersResponse = {
   error?: string;
 };
 
+type MonthlyWinner = {
+  month: string;
+  winningTicket: string | null;
+  tickets: string[];
+  winnersCount: number;
+};
+
+type MonthlyWinnersResponse = {
+  monthlyWinners: MonthlyWinner[];
+  error?: string;
+};
+
 function currentMonthText() {
   const now = new Date();
   return `${now.getUTCFullYear()}-${String(now.getUTCMonth() + 1).padStart(2, '0')}`;
@@ -29,9 +41,11 @@ export default function CEOLotteryPage() {
   const [month, setMonth] = useState(currentMonthText());
   const [loading, setLoading] = useState(false);
   const [drawing, setDrawing] = useState(false);
+  const [loadingMonthly, setLoadingMonthly] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
   const [winners, setWinners] = useState<Winner[]>([]);
+  const [monthlyWinners, setMonthlyWinners] = useState<MonthlyWinner[]>([]);
 
   const titleMonth = useMemo(() => month, [month]);
 
@@ -57,6 +71,26 @@ export default function CEOLotteryPage() {
     void loadWinners(month);
   }, [month]);
 
+  const loadMonthlyWinners = async () => {
+    setLoadingMonthly(true);
+    try {
+      const response = await fetch('/api/ceo/lottery/winners');
+      const data = (await response.json()) as MonthlyWinnersResponse;
+      if (!response.ok) {
+        throw new Error(data.error ?? 'Impossible de charger les tickets gagnants par mois.');
+      }
+      setMonthlyWinners(data.monthlyWinners);
+    } catch {
+      setMonthlyWinners([]);
+    } finally {
+      setLoadingMonthly(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadMonthlyWinners();
+  }, []);
+
   const draw = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setDrawing(true);
@@ -76,6 +110,7 @@ export default function CEOLotteryPage() {
 
       setWinners(data.winners);
       setSuccess(`Tirage ${data.month} termine: ${data.winners.length} gagnant(s).`);
+      await loadMonthlyWinners();
     } catch (drawError) {
       setError(drawError instanceof Error ? drawError.message : 'Erreur pendant le tirage.');
     } finally {
@@ -155,6 +190,46 @@ export default function CEOLotteryPage() {
                 ) : (
                   <tr>
                     <td colSpan={5} className="py-4 text-slate-500">Aucun gagnant pour ce mois.</td>
+                  </tr>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </section>
+
+        <section className="mt-6 rounded-2xl border bg-white p-6 shadow-sm">
+          <div className="mb-4 flex items-center justify-between">
+            <h2 className="text-lg font-bold">Numero du ticket gagnant par mois</h2>
+            <button
+              type="button"
+              onClick={() => void loadMonthlyWinners()}
+              className="rounded-lg border border-slate-300 px-4 py-2 text-sm font-semibold hover:bg-slate-100"
+            >
+              {loadingMonthly ? 'Chargement...' : 'Actualiser'}
+            </button>
+          </div>
+
+          <div className="overflow-x-auto">
+            <table className="min-w-full text-left text-sm">
+              <thead className="border-b text-slate-500">
+                <tr>
+                  <th className="py-3">Mois</th>
+                  <th className="py-3">Ticket gagnant</th>
+                  <th className="py-3">Nombre de gagnants</th>
+                </tr>
+              </thead>
+              <tbody>
+                {monthlyWinners.length > 0 ? (
+                  monthlyWinners.map((entry) => (
+                    <tr key={entry.month} className="border-b last:border-0">
+                      <td className="py-3 font-semibold">{entry.month}</td>
+                      <td className="py-3 font-mono text-xs">{entry.winningTicket ?? '-'}</td>
+                      <td className="py-3">{entry.winnersCount}</td>
+                    </tr>
+                  ))
+                ) : (
+                  <tr>
+                    <td colSpan={3} className="py-4 text-slate-500">Aucun ticket gagnant enregistre pour le moment.</td>
                   </tr>
                 )}
               </tbody>
