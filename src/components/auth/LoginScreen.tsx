@@ -1,7 +1,6 @@
 "use client";
 
 import { FormEvent, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
 import Link from 'next/link';
 import { Lock, Mail } from 'lucide-react';
 import Image from 'next/image';
@@ -12,7 +11,6 @@ type Props = {
 };
 
 export default function LoginScreen({ role }: Props) {
-  const router = useRouter();
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState<string | null>(null);
@@ -29,12 +27,12 @@ export default function LoginScreen({ role }: Props) {
       const response = await fetch('/api/auth/login', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
         body: JSON.stringify({ email, password, role }),
       });
       const data = (await response.json()) as { error?: string; redirectTo?: string };
       if (!response.ok) throw new Error(data.error ?? 'Connexion impossible.');
-      router.push(data.redirectTo ?? (role === 'CEO' ? '/ceo' : '/manager'));
-      router.refresh();
+      window.location.assign(data.redirectTo ?? (role === 'CEO' ? '/ceo' : '/manager'));
     } catch (requestError) {
       setError(requestError instanceof Error ? requestError.message : 'Connexion impossible.');
     } finally {

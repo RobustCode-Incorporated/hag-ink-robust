@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useState } from 'react';
+import { fetchWithSession } from '@/lib/client/session-fetch';
 
 type Product = { id: string; name: string; stockQty: number; isConsumable: boolean };
 
@@ -10,9 +11,12 @@ export default function ManagerProductsPage() {
   useEffect(() => {
     void (async () => {
       try {
-        const res = await fetch('/api/products');
+        const res = await fetchWithSession('/api/products', undefined, {
+          loginPath: '/login/manager',
+        });
         if (res.ok) setProducts(await res.json());
-      } catch (e) {
+        else setProducts(null);
+      } catch {
         setProducts(null);
       }
     })();

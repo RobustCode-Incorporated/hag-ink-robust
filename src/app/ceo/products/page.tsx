@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useMemo, useState } from 'react';
+import { fetchWithSession } from '@/lib/client/session-fetch';
 
 type Product = {
   id: string;
@@ -26,7 +27,9 @@ export default function CEOProductsPage() {
   const loadProducts = async () => {
     setLoadingProducts(true);
     try {
-      const res = await fetch('/api/products');
+      const res = await fetchWithSession('/api/products', undefined, {
+        loginPath: '/login/ceo',
+      });
       if (res.ok) setProducts(await res.json());
       else setProducts(null);
     } catch {
@@ -51,7 +54,7 @@ export default function CEOProductsPage() {
     setProductMessage(null);
 
     try {
-      const response = await fetch('/api/products', {
+      const response = await fetchWithSession('/api/products', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
@@ -61,6 +64,8 @@ export default function CEOProductsPage() {
           stockQty: Number(stockQty),
           isConsumable,
         }),
+      }, {
+        loginPath: '/login/ceo',
       });
 
       const result = await response.json();

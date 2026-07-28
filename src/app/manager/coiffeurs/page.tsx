@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from 'react';
+import { fetchWithSession } from '@/lib/client/session-fetch';
 
 type Barber = { id: string; firstName: string; lastName: string; phone: string | null; };
 
@@ -16,7 +17,9 @@ export default function ManagerBarbersPage() {
   const loadBarbers = async () => {
     setLoading(true);
     try {
-      const res = await fetch('/api/barbers');
+      const res = await fetchWithSession('/api/barbers', undefined, {
+        loginPath: '/login/manager',
+      });
       if (res.ok) setBarbers(await res.json());
     } finally {
       setLoading(false);
@@ -30,10 +33,12 @@ export default function ManagerBarbersPage() {
     setSaving(true);
     setMessage(null);
     try {
-      const response = await fetch('/api/barbers', {
+      const response = await fetchWithSession('/api/barbers', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ firstName, lastName, phone }),
+      }, {
+        loginPath: '/login/manager',
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Erreur création barbier');

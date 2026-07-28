@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from 'react';
+import { fetchWithSession } from '@/lib/client/session-fetch';
 
 type Dashboard = {
   kpi: { todayRevenue: number; todayServices: number; activeBarbers: number; totalExpenses: number; netRevenue: number };
@@ -28,8 +29,11 @@ export default function ManagerDashboard() {
   const [expenseSaving, setExpenseSaving] = useState(false);
 
   const load = async () => {
-    const response = await fetch('/api/manager/dashboard');
-    if (response.ok) setDashboard(await response.json());
+    const response = await fetchWithSession('/api/manager/dashboard', undefined, {
+      loginPath: '/login/manager',
+    });
+    if (!response.ok) return;
+    setDashboard(await response.json());
   };
 
   useEffect(() => { void load(); }, []);
@@ -40,10 +44,12 @@ export default function ManagerDashboard() {
     setMessage(null);
 
     try {
-      const response = await fetch('/api/services', {
+      const response = await fetchWithSession('/api/services', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ barberId, amount: Number(amount), description }),
+      }, {
+        loginPath: '/login/manager',
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? 'Erreur serveur');
@@ -65,10 +71,12 @@ export default function ManagerDashboard() {
     setExpenseMessage(null);
 
     try {
-      const response = await fetch('/api/expenses', {
+      const response = await fetchWithSession('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: Number(expenseAmount), description: expenseDescription, role: 'MANAGER' }),
+      }, {
+        loginPath: '/login/manager',
       });
       const data = await response.json();
       if (!response.ok) throw new Error(data.error ?? 'Erreur serveur');

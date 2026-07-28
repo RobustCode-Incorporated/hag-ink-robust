@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from 'react';
+import { fetchWithSession } from '@/lib/client/session-fetch';
 
 type Barber = { id: string; firstName: string; lastName: string; phone: string | null; commissionRate: number; salaryType: string; };
 type Cleaner = { id: string; email: string; role: string; };
@@ -23,7 +24,10 @@ export default function CEOHRPage() {
   const loadData = async () => {
     setLoading(true);
     try {
-      const [barberRes, cleanerRes] = await Promise.all([fetch('/api/barbers'), fetch('/api/cleaners')]);
+      const [barberRes, cleanerRes] = await Promise.all([
+        fetchWithSession('/api/barbers', undefined, { loginPath: '/login/ceo' }),
+        fetchWithSession('/api/cleaners', undefined, { loginPath: '/login/ceo' }),
+      ]);
       if (barberRes.ok) setBarbers(await barberRes.json());
       if (cleanerRes.ok) setCleaners(await cleanerRes.json());
     } finally {
@@ -57,10 +61,12 @@ export default function CEOHRPage() {
     }
 
     try {
-      const response = await fetch('/api/users', {
+      const response = await fetchWithSession('/api/users', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(body),
+      }, {
+        loginPath: '/login/ceo',
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error || 'Erreur création collaborateur');

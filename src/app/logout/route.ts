@@ -1,9 +1,9 @@
 import { NextResponse } from 'next/server';
 import { SESSION_COOKIE_NAME, sessionCookieDomainForHost } from '@/lib/auth';
 
-export async function POST(request: Request) {
+export async function GET(request: Request) {
   const cookieDomain = sessionCookieDomainForHost(new URL(request.url).hostname);
-  const response = NextResponse.json({ success: true });
+  const response = NextResponse.redirect(new URL('/login', request.url));
   response.cookies.set({
     name: SESSION_COOKIE_NAME,
     value: '',

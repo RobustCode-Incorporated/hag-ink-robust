@@ -2,7 +2,7 @@ import { SignJWT, jwtVerify, type JWTPayload } from 'jose';
 
 export type AuthRole = 'CEO' | 'MANAGER';
 
-export const SESSION_COOKIE_NAME = 'hag_session';
+export const SESSION_COOKIE_NAME = 'hag_session_v2';
 export const SESSION_TTL_SECONDS = 60 * 60 * 8;
 
 export type SessionPayload = JWTPayload & {
@@ -51,4 +51,23 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
 
 export function roleHome(role: AuthRole): string {
   return role === 'CEO' ? '/ceo' : '/manager';
+}
+
+export function sessionCookieDomainForHost(hostname: string): string | undefined {
+  const normalizedHost = hostname.trim().toLowerCase();
+  const configuredHost = process.env.NEXT_PUBLIC_CUSTOM_DOMAIN?.trim().toLowerCase();
+  const configuredBaseDomain = configuredHost?.startsWith('www.') ? configuredHost.slice(4) : configuredHost;
+
+  if (configuredBaseDomain) {
+    if (normalizedHost === configuredBaseDomain || normalizedHost === `www.${configuredBaseDomain}`) {
+      return `.${configuredBaseDomain}`;
+    }
+    return undefined;
+  }
+
+  if (normalizedHost === 'hag-ink.com' || normalizedHost === 'www.hag-ink.com') {
+    return '.hag-ink.com';
+  }
+
+  return undefined;
 }

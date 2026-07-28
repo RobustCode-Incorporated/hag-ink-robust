@@ -1,6 +1,7 @@
 "use client";
 
 import { FormEvent, useEffect, useState } from 'react';
+import { fetchWithSession } from '@/lib/client/session-fetch';
 
 type Expense = {
   id: string;
@@ -24,13 +25,24 @@ export default function ManagerExpensesPage() {
   const [expenseMessage, setExpenseMessage] = useState<string | null>(null);
   const [expenseSaving, setExpenseSaving] = useState(false);
 
-  useEffect(() => {
+  const loadExpenses = async () => {
     setLoading(true);
-    fetch(`/api/manager/depenses?period=${period}`)
-      .then((res) => res.json())
-      .then((json) => setData(json))
-      .catch(() => setData(null))
-      .finally(() => setLoading(false));
+    try {
+      const response = await fetchWithSession(`/api/manager/depenses?period=${period}`, undefined, {
+        loginPath: '/login/manager',
+      });
+      if (!response.ok) throw new Error('Impossible de charger les dépenses.');
+      const json = (await response.json()) as ManagerExpensesData;
+      setData(json);
+    } catch {
+      setData(null);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    void loadExpenses();
   }, [period]);
 
   const submitExpense = async (event: FormEvent) => {
@@ -39,10 +51,12 @@ export default function ManagerExpensesPage() {
     setExpenseMessage(null);
 
     try {
-      const response = await fetch('/api/expenses', {
+      const response = await fetchWithSession('/api/expenses', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ amount: Number(expenseAmount), description: expenseDescription, role: 'MANAGER' }),
+      }, {
+        loginPath: '/login/manager',
       });
       const result = await response.json();
       if (!response.ok) throw new Error(result.error ?? 'Erreur serveur');
@@ -50,12 +64,7 @@ export default function ManagerExpensesPage() {
       setExpenseAmount('');
       setExpenseDescription('');
       setExpenseMessage('Dépense bien enregistrée.');
-      setLoading(true);
-      fetch(`/api/manager/depenses?period=${period}`)
-        .then((res) => res.json())
-        .then((json) => setData(json))
-        .catch(() => setData(null))
-        .finally(() => setLoading(false));
+      await loadExpenses();
     } catch (error) {
       setExpenseMessage(error instanceof Error ? error.message : 'Erreur lors de l’enregistrement.');
     } finally {
@@ -85,8 +94,8 @@ export default function ManagerExpensesPage() {
         <div className="grid gap-6 md:grid-cols-2 mb-8">
           <div className="rounded-2xl border bg-white p-6 shadow-sm">
             <p className="text-xs uppercase tracking-widest text-slate-400">KPI Dépenses</p>
-            <p className="mt-2 text-3xl font-black">${data?.kpi.totalExpenses.toLocaleString() ?? 0}</p>
-            <p className="mt-2 text-sm text-slate-500">{data?.kpi.totalCount ?? 0} dépense(s) dans la période.</p>
+            <p className="mt-2 text-3xl font-black">${data?.kpi?.totalExpenses?.toLocaleString() ?? 0}</p>
+            <p className="mt-2 text-sm text-slate-500">{data?.kpi?.totalCount ?? 0} dépense(s) dans la période.</p>
           </div>
           <form onSubmit={submitExpense} className="rounded-2xl border bg-white p-6 shadow-sm">
             <p className="text-xs uppercase tracking-widest text-slate-400">Signaler une dépense</p>
@@ -141,7 +150,7 @@ export default function ManagerExpensesPage() {
                   </tr>
                 </thead>
                 <tbody>
-                  {data?.expenses.length ? (
+                  {data?.expenses?.length ? (
                     data.expenses.map((expense) => (
                       <tr key={expense.id} className="border-b last:border-0 hover:bg-slate-50 transition-colors">
                         <td className="py-3 font-semibold">${expense.amount.toLocaleString()}</td>

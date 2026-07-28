@@ -3,6 +3,7 @@ import {
   isManagementOnlyModeEnabled,
   roleHome,
   SESSION_COOKIE_NAME,
+  sessionCookieDomainForHost,
   verifySessionToken,
   type AuthRole,
 } from '@/lib/auth';
@@ -24,7 +25,7 @@ function isApiRoute(pathname: string): boolean {
 }
 
 function isPublicRoute(pathname: string): boolean {
-  return startsWithPath(pathname, '/login') || pathname === '/api/auth/login' || pathname === '/api/auth/logout';
+  return startsWithPath(pathname, '/login') || pathname === '/logout' || pathname === '/api/auth/login' || pathname === '/api/auth/logout';
 }
 
 function requiresAuth(pathname: string): boolean {
@@ -65,7 +66,13 @@ export async function middleware(request: NextRequest) {
     const session = await verifySessionToken(token);
     if (!session) {
       const response = NextResponse.redirect(new URL('/login', request.url));
-      response.cookies.set({ name: SESSION_COOKIE_NAME, value: '', path: '/', maxAge: 0 });
+      response.cookies.set({
+        name: SESSION_COOKIE_NAME,
+        value: '',
+        path: '/',
+        maxAge: 0,
+        domain: sessionCookieDomainForHost(normalizedHostname),
+      });
       return response;
     }
 
@@ -78,6 +85,8 @@ export async function middleware(request: NextRequest) {
   }
 
   if (isPublicRoute(pathname)) {
+    if (pathname === '/logout') return NextResponse.next();
+
     const token = request.cookies.get(SESSION_COOKIE_NAME)?.value;
     if (!token) return NextResponse.next();
 
@@ -98,7 +107,13 @@ export async function middleware(request: NextRequest) {
   if (!session) {
     if (isApiRoute(pathname)) return unauthorizedApi('Invalid session.');
     const response = NextResponse.redirect(new URL(loginPathForRequest(pathname), request.url));
-    response.cookies.set({ name: SESSION_COOKIE_NAME, value: '', path: '/', maxAge: 0 });
+    response.cookies.set({
+      name: SESSION_COOKIE_NAME,
+      value: '',
+      path: '/',
+      maxAge: 0,
+      domain: sessionCookieDomainForHost(normalizedHostname),
+    });
     return response;
   }
 

@@ -1,6 +1,7 @@
 "use client";
 import dynamic from 'next/dynamic';
 import { useEffect, useState, useMemo } from 'react';
+import { fetchWithSession } from '@/lib/client/session-fetch';
 const Chart = dynamic(() => import('react-apexcharts'), { ssr: false });
 
 function KPICard({ title, value }: any) {
@@ -20,14 +21,18 @@ export default function CEODashboard() {
 
   useEffect(() => {
     setLoading(true);
-    fetch(`/api/ceo/stats?period=${period}`)
-      .then(res => res.json())
+    fetchWithSession(`/api/ceo/stats?period=${period}`, undefined, { loginPath: '/login/ceo' })
+      .then(res => {
+        if (!res.ok) throw new Error('Erreur API');
+        return res.json();
+      })
       .then(json => { 
         setData(json); 
         setLoading(false); 
       })
       .catch(err => { 
         console.error("Erreur API:", err); 
+        setData(null);
         setLoading(false); 
       });
   }, [period]); 

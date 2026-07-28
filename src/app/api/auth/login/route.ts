@@ -1,11 +1,11 @@
 import { NextResponse } from 'next/server';
+import { compare } from 'bcryptjs';
 import prisma from '@/lib/prisma';
-import { PrismaPg } from '@prisma/adapter-pg';
-import pg from 'pg';
 import {
   createSessionToken,
   SESSION_COOKIE_NAME,
   SESSION_TTL_SECONDS,
+  sessionCookieDomainForHost,
   type AuthRole,
   roleHome,
 } from '@/lib/auth';
@@ -46,15 +46,19 @@ export async function POST(request: Request) {
     const envCredentials = getEnvCredentials(role);
     if (envCredentials) {
       isValid = normalizedEmail === envCredentials.email.trim().toLowerCase() && normalizedPassword === envCredentials.password;
-    } else {
+    }
+
+    if (!isValid) {
       const user = await prisma.user.findFirst({
-        where: {
-          role,
-          email: normalizedEmail,
-          password: normalizedPassword,
-        },
+        where: { role, email: normalizedEmail },
       });
-      isValid = Boolean(user);
+      if (user) {
+        // Support both bcrypt-hashed passwords and legacy plain-text passwords
+        const isHashed = user.password.startsWith('$2');
+        isValid = isHashed
+          ? await compare(normalizedPassword, user.password)
+          : user.password === normalizedPassword;
+      }
     }
 
     if (!isValid) {
@@ -62,6 +66,7 @@ export async function POST(request: Request) {
     }
 
     const token = await createSessionToken({ role, email: normalizedEmail });
+    const cookieDomain = sessionCookieDomainForHost(new URL(request.url).hostname);
     const response = NextResponse.json({ success: true, role, redirectTo: roleHome(role) });
     response.cookies.set({
       name: SESSION_COOKIE_NAME,
@@ -71,9 +76,10 @@ export async function POST(request: Request) {
       secure: process.env.NODE_ENV === 'production',
       maxAge: SESSION_TTL_SECONDS,
       path: '/',
+      domain: cookieDomain,
     });
     return response;
-  } catch (error) {
+  } catch {
     return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
   }
 }
