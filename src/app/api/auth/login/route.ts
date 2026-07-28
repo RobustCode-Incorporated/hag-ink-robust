@@ -10,26 +10,11 @@ import {
   roleHome,
 } from '@/lib/auth';
 
-
 type LoginBody = {
   email: unknown;
   password: unknown;
   role: unknown;
 };
-
-function getEnvCredentials(role: AuthRole): { email: string; password: string } | null {
-  if (role === 'CEO') {
-    const email = process.env.CEO_LOGIN_EMAIL;
-    const password = process.env.CEO_LOGIN_PASSWORD;
-    if (!email || !password) return null;
-    return { email, password };
-  }
-
-  const email = process.env.MANAGER_LOGIN_EMAIL;
-  const password = process.env.MANAGER_LOGIN_PASSWORD;
-  if (!email || !password) return null;
-  return { email, password };
-}
 
 export async function POST(request: Request) {
   try {
@@ -42,24 +27,18 @@ export async function POST(request: Request) {
     const normalizedEmail = email.trim().toLowerCase();
     const normalizedPassword = password.trim();
 
-    let isValid = false;
-    const envCredentials = getEnvCredentials(role);
-    if (envCredentials) {
-      isValid = normalizedEmail === envCredentials.email.trim().toLowerCase() && normalizedPassword === envCredentials.password;
+    const user = await prisma.user.findFirst({
+      where: { role, email: normalizedEmail },
+    });
+
+    if (!user) {
+      return NextResponse.json({ error: 'Identifiants invalides.' }, { status: 401 });
     }
 
-    if (!isValid) {
-      const user = await prisma.user.findFirst({
-        where: { role, email: normalizedEmail },
-      });
-      if (user) {
-        // Support both bcrypt-hashed passwords and legacy plain-text passwords
-        const isHashed = user.password.startsWith('$2');
-        isValid = isHashed
-          ? await compare(normalizedPassword, user.password)
-          : user.password === normalizedPassword;
-      }
-    }
+    const isHashed = user.password.startsWith('$2');
+    const isValid = isHashed
+      ? await compare(normalizedPassword, user.password)
+      : user.password === normalizedPassword;
 
     if (!isValid) {
       return NextResponse.json({ error: 'Identifiants invalides.' }, { status: 401 });
