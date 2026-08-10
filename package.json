@@ -8,6 +8,7 @@
     "start": "next start",
     "lint": "eslint",
     "test": "vitest",
+    "postinstall": "prisma generate",
     "db:seed": "prisma db seed",
     "db:migrate-passwords": "tsx prisma/hash_passwords.ts",
     "db:validate": "prisma validate",
