@@ -16,7 +16,9 @@ const blackOpsOne = Black_Ops_One({ weight: '400', subsets: ['latin'] });
 export default function ClientPage() {
   const [selectedPlan, setSelectedPlan] = useState<{ code: string; name: string; price: number } | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-  const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', email: '' });
+  
+  // Ajout de "paymentType" pour correspondre aux spécifications FlexPay (1 = Mobile Money, 2 = Carte Bancaire)
+  const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', email: '', paymentType: '1' });
   const [bookingForm, setBookingForm] = useState({
     firstName: '',
     lastName: '',
@@ -26,11 +28,14 @@ export default function ClientPage() {
     time: '',
     notes: '',
   });
+  
   const [checkoutError, setCheckoutError] = useState<string | null>(null);
+  const [checkoutSuccess, setCheckoutSuccess] = useState<string | null>(null); // Nouvel état pour le message de push Mobile Money
   const [bookingError, setBookingError] = useState<string | null>(null);
   const [bookingSuccess, setBookingSuccess] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [isBookingSubmitting, setIsBookingSubmitting] = useState(false);
+  
   const memberships = [
     { code: "STANDARD_ENFANT", name: "Standard Enfant", target: "Enfants", value: 50, price: 49, desc: "Jusqu’à 5 coiffures (minimum conseillé : 3)", perks: ["Flexibilité totale", "Accès à la loterie"] },
     { code: "STANDARD_ADULTE", name: "Standard Adulte", target: "Hommes / Femmes", value: 100, price: 89, desc: "Jusqu’à 5 coiffures (minimum conseillé : 3)", perks: ["11$ d'économie", "Accès VIP au programme fidélité"] },
@@ -43,14 +48,42 @@ export default function ClientPage() {
   const startCheckout = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!selectedPlan) return;
-    setCheckoutError(null); setIsSubmitting(true);
+    
+    setCheckoutError(null); 
+    setCheckoutSuccess(null);
+    setIsSubmitting(true);
+    
     try {
-      const response = await fetch('/api/payments/create-checkout-session', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ...form, planName: selectedPlan.code }) });
-      const data: { url?: string; error?: string } = await response.json();
-      if (!response.ok || !data.url) throw new Error(data.error ?? 'Impossible de préparer le paiement.');
-      window.location.assign(data.url);
-    } catch (error) { setCheckoutError(error instanceof Error ? error.message : 'Une erreur est survenue.'); }
-    finally { setIsSubmitting(false); }
+      // Ton backend devra communiquer avec l'API FlexPay de façon sécurisée (avec le Token Bearer)
+      const response = await fetch('/api/payments/flexpay', { 
+        method: 'POST', 
+        headers: { 'Content-Type': 'application/json' }, 
+        body: JSON.stringify({ 
+          ...form, 
+          amount: selectedPlan.price,
+          planName: selectedPlan.code 
+        }) 
+      });
+      
+      const data: { url?: string; message?: string; error?: string } = await response.json();
+      
+      if (!response.ok) throw new Error(data.error ?? 'Impossible de préparer le paiement via FlexPay.');
+      
+      // FlexPay Card V2 : Redirection vers l'URL de paiement
+      if (form.paymentType === '2' && data.url) {
+        window.location.assign(data.url);
+      } 
+      // FlexPay Mobile Money : Affichage du message pour valider le push USSD
+      else if (form.paymentType === '1' && data.message) {
+        setCheckoutSuccess(data.message);
+      } else {
+        throw new Error('Réponse invalide du serveur de paiement.');
+      }
+    } catch (error) { 
+      setCheckoutError(error instanceof Error ? error.message : 'Une erreur est survenue.'); 
+    } finally { 
+      setIsSubmitting(false); 
+    }
   };
 
   const submitBooking = async (event: FormEvent<HTMLFormElement>) => {
@@ -150,7 +183,6 @@ export default function ClientPage() {
       {/* --- SECTION MEMBERSHIPS --- */}
       <section id="memberships" className="py-24 px-4 relative border-t border-neutral-900 overflow-hidden">
         
-        {/* Nouveau Background Tondeuses avec Overlay dégradé */}
         <div className="absolute inset-0 z-0">
           <Image 
             src="/tools.jpg" 
@@ -159,7 +191,6 @@ export default function ClientPage() {
             className="object-cover object-center opacity-50 grayscale-[50%] contrast-[1.2]" 
             priority
           />
-          {/* Calque ajusté à 60% d'opacité pour laisser passer la lumière de l'image */}
           <div className="absolute inset-0 bg-black/60"></div> 
         </div>
 
@@ -208,7 +239,6 @@ export default function ClientPage() {
             ))}
           </div>
 
-          {/* Carte spéciale Limited Edition en pleine largeur */}
           <motion.div 
              initial={{ opacity: 0, y: 20 }}
              whileInView={{ opacity: 1, y: 0 }}
@@ -239,79 +269,75 @@ export default function ClientPage() {
         </div>
       </section>
 
-      {/* --- SECTION LOTERIE VIP (DESIGN STRICT PREMIUM) --- */}
-<section className="py-32 px-4 bg-[#020202] border-t border-neutral-900 relative">
-  <div className="max-w-7xl mx-auto relative z-10">
-    <div className="text-center mb-20">
-      <motion.div
-        initial={{ opacity: 0, y: 10 }}
-        whileInView={{ opacity: 1, y: 0 }}
-        viewport={{ once: true }}
-        className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-800 bg-black mb-6"
-      >
-        <Star className="w-4 h-4 text-neutral-500" />
-        <span className="text-xs font-bold tracking-[0.2em] uppercase text-neutral-400">Programme de Fidélité</span>
-      </motion.div>
-      <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-6">
-        Grande Loterie VIP
-      </h2>
-    </div>
+      {/* --- SECTION LOTERIE VIP --- */}
+      <section className="py-32 px-4 bg-[#020202] border-t border-neutral-900 relative">
+        <div className="max-w-7xl mx-auto relative z-10">
+          <div className="text-center mb-20">
+            <motion.div
+              initial={{ opacity: 0, y: 10 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              className="inline-flex items-center gap-2 px-4 py-2 rounded-full border border-neutral-800 bg-black mb-6"
+            >
+              <Star className="w-4 h-4 text-neutral-500" />
+              <span className="text-xs font-bold tracking-[0.2em] uppercase text-neutral-400">Programme de Fidélité</span>
+            </motion.div>
+            <h2 className="text-4xl md:text-6xl font-black uppercase tracking-tight text-white mb-6">
+              Grande Loterie VIP
+            </h2>
+          </div>
 
-    {/* Top 3 Prix - Style Acier */}
-    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
-      {[
-        { icon: Trophy, rank: "1er Prix", title: "Journée Spa", desc: "Soins complets pour 2 personnes." },
-        { icon: Medal, rank: "2e Prix", title: "Dîner Gastronomique", desc: "Menu dégustation, transport inclus." },
-        { icon: Award, rank: "3e Prix", title: "Brunch de Luxe", desc: "Service premium, cadre privilégié." },
-      ].map((prize, i) => {
-        const Icon = prize.icon;
-        return (
-          <motion.div
-            key={i}
-            className="p-8 bg-[#0a0a0a] border border-neutral-800 flex flex-col items-start hover:border-neutral-600 transition-colors"
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            {[
+              { icon: Trophy, rank: "1er Prix", title: "Journée Spa", desc: "Soins complets pour 2 personnes." },
+              { icon: Medal, rank: "2e Prix", title: "Dîner Gastronomique", desc: "Menu dégustation, transport inclus." },
+              { icon: Award, rank: "3e Prix", title: "Brunch de Luxe", desc: "Service premium, cadre privilégié." },
+            ].map((prize, i) => {
+              const Icon = prize.icon;
+              return (
+                <motion.div
+                  key={i}
+                  className="p-8 bg-[#0a0a0a] border border-neutral-800 flex flex-col items-start hover:border-neutral-600 transition-colors"
+                >
+                  <div className="w-10 h-10 mb-6 flex items-center justify-center">
+                    <Icon className="w-6 h-6 text-neutral-600" />
+                  </div>
+                  <h3 className="text-[10px] font-bold tracking-widest text-neutral-500 uppercase mb-2">{prize.rank}</h3>
+                  <h4 className="text-lg font-bold uppercase text-white mb-4">{prize.title}</h4>
+                  <p className="text-neutral-500 text-sm">{prize.desc}</p>
+                </motion.div>
+              );
+            })}
+          </div>
+
+          <motion.div 
+            initial={{ opacity: 0, y: 20 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true }}
+            className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto"
           >
-            <div className="w-10 h-10 mb-6 flex items-center justify-center">
-              <Icon className="w-6 h-6 text-neutral-600" />
+            {minorPrizes.slice(0, 6).map((item, i) => {
+              const Icon = item.icon;
+              return (
+                <div key={i} className="flex items-center gap-4 p-5 bg-[#0a0a0a] border border-neutral-800">
+                  <div className="p-2">
+                    <Icon className="w-4 h-4 text-neutral-600" />
+                  </div>
+                  <span className="text-neutral-400 font-medium text-sm">{item.text}</span>
+                </div>
+              );
+            })}
+            <div className="flex items-center gap-4 p-5 bg-[#0a0a0a] border border-neutral-800 md:col-span-2 md:justify-center">
+              <div className="p-2">
+                <Gift className="w-4 h-4 text-neutral-600" />
+              </div>
+              <span className="text-neutral-400 font-medium text-sm">10e : Un mois de Membership offert</span>
             </div>
-            <h3 className="text-[10px] font-bold tracking-widest text-neutral-500 uppercase mb-2">{prize.rank}</h3>
-            <h4 className="text-lg font-bold uppercase text-white mb-4">{prize.title}</h4>
-            <p className="text-neutral-500 text-sm">{prize.desc}</p>
           </motion.div>
-        );
-      })}
-    </div>
-
-    {/* --- Autres récompenses (Réorganisation pour centrer le 10e prix) --- */}
-<motion.div 
-  initial={{ opacity: 0, y: 20 }}
-  whileInView={{ opacity: 1, y: 0 }}
-  viewport={{ once: true }}
-  className="grid grid-cols-1 md:grid-cols-2 gap-4 max-w-4xl mx-auto"
->
-  {/* On affiche les prix de 4 à 9 normalement */}
-  {minorPrizes.slice(0, 6).map((item, i) => {
-    const Icon = item.icon;
-    return (
-      <div key={i} className="flex items-center gap-4 p-5 bg-[#0a0a0a] border border-neutral-800">
-        <div className="p-2">
-          <Icon className="w-4 h-4 text-neutral-600" />
         </div>
-        <span className="text-neutral-400 font-medium text-sm">{item.text}</span>
-      </div>
-    );
-  })}
+      </section>
 
-  {/* Le 10e prix est ici forcé à occuper la largeur totale pour être centré sous les autres */}
-  <div className="flex items-center gap-4 p-5 bg-[#0a0a0a] border border-neutral-800 md:col-span-2 md:justify-center">
-    <div className="p-2">
-      <Gift className="w-4 h-4 text-neutral-600" />
-    </div>
-    <span className="text-neutral-400 font-medium text-sm">10e : Un mois de Membership offert</span>
-  </div>
-</motion.div>
-  </div>
-</section>
-
+      {/* --- MODAL RESERVATION --- */}
       <SlideOver isOpen={isBookingOpen} onClose={() => setIsBookingOpen(false)} title="Réserver une séance">
         <form onSubmit={submitBooking} className="space-y-5">
           <p className="text-sm text-neutral-400">
@@ -386,13 +412,47 @@ export default function ClientPage() {
         </form>
       </SlideOver>
 
-      <SlideOver isOpen={selectedPlan !== null} onClose={() => setSelectedPlan(null)} title="Finaliser votre membership">
+      {/* --- MODAL PAIEMENT FLEXPAY --- */}
+      <SlideOver isOpen={selectedPlan !== null} onClose={() => { setSelectedPlan(null); setCheckoutSuccess(null); }}>
         {selectedPlan && <form onSubmit={startCheckout} className="space-y-5">
-          <div className="border border-neutral-800 bg-neutral-900 p-4"><p className="text-xs uppercase tracking-widest text-neutral-500">Formule choisie</p><p className="mt-1 text-lg font-bold text-white">{selectedPlan.name} — {selectedPlan.price}$</p></div>
-          <p className="text-sm text-neutral-400">Vos informations créent votre profil client Hag & Ink. Le paiement par carte est ensuite traité exclusivement par Stripe.</p>
-          {[['firstName', 'Prénom', 'text'], ['lastName', 'Nom', 'text'], ['phone', 'Téléphone', 'tel'], ['email', 'E-mail (facultatif)', 'email']].map(([field, label, type]) => <label key={field} className="block text-sm text-neutral-300">{label}<input required={field !== 'email'} type={type} value={form[field as keyof typeof form]} onChange={(event) => setForm({ ...form, [field]: event.target.value })} className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white" /></label>)}
+          <div className="border border-neutral-800 bg-neutral-900 p-4">
+            <p className="text-xs uppercase tracking-widest text-neutral-500">Formule choisie</p>
+            <p className="mt-1 text-lg font-bold text-white">{selectedPlan.name} — {selectedPlan.price}$</p>
+          </div>
+          
+          <p className="text-sm text-neutral-400">Vos informations créent votre profil client Hag & Ink. Le paiement est traité de manière sécurisée par FlexPay.</p>
+          
+          {[['firstName', 'Prénom', 'text'], ['lastName', 'Nom', 'text'], ['phone', 'Téléphone', 'tel'], ['email', 'E-mail (facultatif)', 'email']].map(([field, label, type]) => (
+            <label key={field} className="block text-sm text-neutral-300">
+              {label}
+              <input required={field !== 'email'} type={type} value={form[field as keyof typeof form]} onChange={(event) => setForm({ ...form, [field]: event.target.value })} className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white" />
+            </label>
+          ))}
+
+          {/* Sélecteur du mode de paiement FlexPay */}
+          <label className="block text-sm text-neutral-300">
+            Méthode de paiement
+            <select
+              value={form.paymentType}
+              onChange={(event) => setForm({ ...form, paymentType: event.target.value })}
+              className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white"
+            >
+              <option value="1">Mobile Money</option>
+              <option value="2">Carte Bancaire (Visa/Mastercard)</option>
+            </select>
+          </label>
+
           {checkoutError && <p role="alert" className="text-sm text-red-400">{checkoutError}</p>}
-          <button disabled={isSubmitting} type="submit" className="w-full bg-white px-4 py-4 font-bold uppercase tracking-wider text-black disabled:opacity-60">{isSubmitting ? 'Redirection sécurisée…' : `Payer ${selectedPlan.price}$ avec Stripe`}</button>
+          {checkoutSuccess && <p className="text-sm text-emerald-400 font-medium">{checkoutSuccess}</p>}
+
+          {!checkoutSuccess && (
+            <button disabled={isSubmitting} type="submit" className="w-full bg-white px-4 py-4 font-bold uppercase tracking-wider text-black disabled:opacity-60">
+              {isSubmitting 
+                ? 'Traitement en cours…' 
+                : `Payer ${selectedPlan.price}$ avec FlexPay`
+              }
+            </button>
+          )}
         </form>}
       </SlideOver>
     </main>
