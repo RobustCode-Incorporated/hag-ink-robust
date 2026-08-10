@@ -45,12 +45,20 @@ export default function ClientPage() {
     { code: "LOCKS_B", name: "Locks B", target: "Locks Premium", value: 350, price: 329, desc: "Jusqu’à 5 prestations", perks: ["Économie majeure", "Service ultra-prioritaire"] },
   ];
 
+  const INTL_PHONE_RE = /^\+\d{7,15}$/;
+
   const startCheckout = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!selectedPlan) return;
     
     setCheckoutError(null); 
     setCheckoutSuccess(null);
+
+    if (!INTL_PHONE_RE.test(form.phone.trim())) {
+      setCheckoutError('Le numéro doit commencer par le code pays, ex : +243841938211');
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -90,6 +98,12 @@ export default function ClientPage() {
     event.preventDefault();
     setBookingError(null);
     setBookingSuccess(null);
+
+    if (!INTL_PHONE_RE.test(bookingForm.phone.trim())) {
+      setBookingError('Le numéro doit commencer par le code pays, ex : +243841938211');
+      return;
+    }
+
     setIsBookingSubmitting(true);
 
     try {
@@ -344,18 +358,31 @@ export default function ClientPage() {
             Choisis une date, une heure et le type de séance. Après validation, tu es redirigé vers WhatsApp du salon avec toutes les informations pré-remplies.
           </p>
 
-          {[['firstName', 'Prénom'], ['lastName', 'Nom'], ['phone', 'Téléphone']].map(([field, label]) => (
+          {[['firstName', 'Prénom'], ['lastName', 'Nom']].map(([field, label]) => (
             <label key={field} className="block text-sm text-neutral-300">
               {label}
               <input
                 required
                 type="text"
-                value={bookingForm[field as 'firstName' | 'lastName' | 'phone']}
+                value={bookingForm[field as 'firstName' | 'lastName']}
                 onChange={(event) => setBookingForm({ ...bookingForm, [field]: event.target.value })}
                 className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white"
               />
             </label>
           ))}
+
+          <label className="block text-sm text-neutral-300">
+            Téléphone
+            <input
+              required
+              type="tel"
+              placeholder="+243841938211"
+              value={bookingForm.phone}
+              onChange={(event) => setBookingForm({ ...bookingForm, phone: event.target.value })}
+              className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white"
+            />
+            <span className="text-xs text-neutral-500 mt-1 block">Commencez par le code pays, ex&nbsp;: +243841938211</span>
+          </label>
 
           <label className="block text-sm text-neutral-300">
             Type de séance
@@ -422,12 +449,25 @@ export default function ClientPage() {
           
           <p className="text-sm text-neutral-400">Vos informations créent votre profil client Hag & Ink. Le paiement est traité de manière sécurisée par FlexPay.</p>
           
-          {[['firstName', 'Prénom', 'text'], ['lastName', 'Nom', 'text'], ['phone', 'Téléphone', 'tel'], ['email', 'E-mail (facultatif)', 'email']].map(([field, label, type]) => (
+          {[['firstName', 'Prénom', 'text'], ['lastName', 'Nom', 'text'], ['email', 'E-mail (facultatif)', 'email']].map(([field, label, type]) => (
             <label key={field} className="block text-sm text-neutral-300">
               {label}
               <input required={field !== 'email'} type={type} value={form[field as keyof typeof form]} onChange={(event) => setForm({ ...form, [field]: event.target.value })} className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white" />
             </label>
           ))}
+
+          <label className="block text-sm text-neutral-300">
+            Téléphone
+            <input
+              required
+              type="tel"
+              placeholder="+243841938211"
+              value={form.phone}
+              onChange={(event) => setForm({ ...form, phone: event.target.value })}
+              className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white"
+            />
+            <span className="text-xs text-neutral-500 mt-1 block">Commencez par le code pays, ex&nbsp;: +243841938211 (requis pour Mobile Money)</span>
+          </label>
 
           {/* Sélecteur du mode de paiement FlexPay */}
           <label className="block text-sm text-neutral-300">
