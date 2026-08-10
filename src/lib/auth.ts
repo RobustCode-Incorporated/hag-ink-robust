@@ -17,7 +17,8 @@ function parseBoolean(value: string | undefined, fallback: boolean): boolean {
 }
 
 export function isManagementOnlyModeEnabled(): boolean {
-  return parseBoolean(process.env.NEXT_PUBLIC_MANAGEMENT_ONLY, true);
+  // Defaulting to false keeps public client routes active unless explicitly disabled in env.
+  return parseBoolean(process.env.NEXT_PUBLIC_MANAGEMENT_ONLY, false);
 }
 
 function getAuthSecret(): Uint8Array {
