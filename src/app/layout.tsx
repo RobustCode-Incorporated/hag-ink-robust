@@ -17,7 +17,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
   const logout = async () => {
     try {
-      await fetch('/api/auth/logout', {
+      await fetch('/api/auth/logout?redirect=1', {
         method: 'POST',
         credentials: 'include',
         cache: 'no-store',
