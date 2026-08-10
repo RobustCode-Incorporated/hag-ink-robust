@@ -223,8 +223,8 @@ exports.Prisma.LotteryTicketScalarFieldEnum = {
 
 exports.Prisma.PaymentScalarFieldEnum = {
   id: 'id',
-  stripeSessionId: 'stripeSessionId',
-  stripeEventId: 'stripeEventId',
+  flexpayOrderNumber: 'flexpayOrderNumber',
+  providerReference: 'providerReference',
   amount: 'amount',
   currency: 'currency',
   status: 'status',

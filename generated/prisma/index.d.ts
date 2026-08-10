@@ -14706,8 +14706,8 @@ export namespace Prisma {
 
   export type PaymentMinAggregateOutputType = {
     id: string | null
-    stripeSessionId: string | null
-    stripeEventId: string | null
+    flexpayOrderNumber: string | null
+    providerReference: string | null
     amount: number | null
     currency: string | null
     status: $Enums.PaymentStatus | null
@@ -14718,8 +14718,8 @@ export namespace Prisma {
 
   export type PaymentMaxAggregateOutputType = {
     id: string | null
-    stripeSessionId: string | null
-    stripeEventId: string | null
+    flexpayOrderNumber: string | null
+    providerReference: string | null
     amount: number | null
     currency: string | null
     status: $Enums.PaymentStatus | null
@@ -14730,8 +14730,8 @@ export namespace Prisma {
 
   export type PaymentCountAggregateOutputType = {
     id: number
-    stripeSessionId: number
-    stripeEventId: number
+    flexpayOrderNumber: number
+    providerReference: number
     amount: number
     currency: number
     status: number
@@ -14752,8 +14752,8 @@ export namespace Prisma {
 
   export type PaymentMinAggregateInputType = {
     id?: true
-    stripeSessionId?: true
-    stripeEventId?: true
+    flexpayOrderNumber?: true
+    providerReference?: true
     amount?: true
     currency?: true
     status?: true
@@ -14764,8 +14764,8 @@ export namespace Prisma {
 
   export type PaymentMaxAggregateInputType = {
     id?: true
-    stripeSessionId?: true
-    stripeEventId?: true
+    flexpayOrderNumber?: true
+    providerReference?: true
     amount?: true
     currency?: true
     status?: true
@@ -14776,8 +14776,8 @@ export namespace Prisma {
 
   export type PaymentCountAggregateInputType = {
     id?: true
-    stripeSessionId?: true
-    stripeEventId?: true
+    flexpayOrderNumber?: true
+    providerReference?: true
     amount?: true
     currency?: true
     status?: true
@@ -14875,8 +14875,8 @@ export namespace Prisma {
 
   export type PaymentGroupByOutputType = {
     id: string
-    stripeSessionId: string
-    stripeEventId: string
+    flexpayOrderNumber: string
+    providerReference: string | null
     amount: number
     currency: string
     status: $Enums.PaymentStatus
@@ -14906,8 +14906,8 @@ export namespace Prisma {
 
   export type PaymentSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    stripeSessionId?: boolean
-    stripeEventId?: boolean
+    flexpayOrderNumber?: boolean
+    providerReference?: boolean
     amount?: boolean
     currency?: boolean
     status?: boolean
@@ -14920,8 +14920,8 @@ export namespace Prisma {
 
   export type PaymentSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    stripeSessionId?: boolean
-    stripeEventId?: boolean
+    flexpayOrderNumber?: boolean
+    providerReference?: boolean
     amount?: boolean
     currency?: boolean
     status?: boolean
@@ -14934,8 +14934,8 @@ export namespace Prisma {
 
   export type PaymentSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     id?: boolean
-    stripeSessionId?: boolean
-    stripeEventId?: boolean
+    flexpayOrderNumber?: boolean
+    providerReference?: boolean
     amount?: boolean
     currency?: boolean
     status?: boolean
@@ -14948,8 +14948,8 @@ export namespace Prisma {
 
   export type PaymentSelectScalar = {
     id?: boolean
-    stripeSessionId?: boolean
-    stripeEventId?: boolean
+    flexpayOrderNumber?: boolean
+    providerReference?: boolean
     amount?: boolean
     currency?: boolean
     status?: boolean
@@ -14958,7 +14958,7 @@ export namespace Prisma {
     planId?: boolean
   }
 
-  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "stripeSessionId" | "stripeEventId" | "amount" | "currency" | "status" | "createdAt" | "clientId" | "planId", ExtArgs["result"]["payment"]>
+  export type PaymentOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "flexpayOrderNumber" | "providerReference" | "amount" | "currency" | "status" | "createdAt" | "clientId" | "planId", ExtArgs["result"]["payment"]>
   export type PaymentInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     client?: boolean | ClientDefaultArgs<ExtArgs>
     plan?: boolean | PlanDefaultArgs<ExtArgs>
@@ -14980,8 +14980,8 @@ export namespace Prisma {
     }
     scalars: $Extensions.GetPayloadResult<{
       id: string
-      stripeSessionId: string
-      stripeEventId: string
+      flexpayOrderNumber: string
+      providerReference: string | null
       amount: number
       currency: string
       status: $Enums.PaymentStatus
@@ -15414,8 +15414,8 @@ export namespace Prisma {
    */
   interface PaymentFieldRefs {
     readonly id: FieldRef<"Payment", 'String'>
-    readonly stripeSessionId: FieldRef<"Payment", 'String'>
-    readonly stripeEventId: FieldRef<"Payment", 'String'>
+    readonly flexpayOrderNumber: FieldRef<"Payment", 'String'>
+    readonly providerReference: FieldRef<"Payment", 'String'>
     readonly amount: FieldRef<"Payment", 'Int'>
     readonly currency: FieldRef<"Payment", 'String'>
     readonly status: FieldRef<"Payment", 'PaymentStatus'>
@@ -15991,8 +15991,8 @@ export namespace Prisma {
 
   export const PaymentScalarFieldEnum: {
     id: 'id',
-    stripeSessionId: 'stripeSessionId',
-    stripeEventId: 'stripeEventId',
+    flexpayOrderNumber: 'flexpayOrderNumber',
+    providerReference: 'providerReference',
     amount: 'amount',
     currency: 'currency',
     status: 'status',
@@ -16874,8 +16874,8 @@ export namespace Prisma {
     OR?: PaymentWhereInput[]
     NOT?: PaymentWhereInput | PaymentWhereInput[]
     id?: StringFilter<"Payment"> | string
-    stripeSessionId?: StringFilter<"Payment"> | string
-    stripeEventId?: StringFilter<"Payment"> | string
+    flexpayOrderNumber?: StringFilter<"Payment"> | string
+    providerReference?: StringNullableFilter<"Payment"> | string | null
     amount?: IntFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     status?: EnumPaymentStatusFilter<"Payment"> | $Enums.PaymentStatus
@@ -16888,8 +16888,8 @@ export namespace Prisma {
 
   export type PaymentOrderByWithRelationInput = {
     id?: SortOrder
-    stripeSessionId?: SortOrder
-    stripeEventId?: SortOrder
+    flexpayOrderNumber?: SortOrder
+    providerReference?: SortOrderInput | SortOrder
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
@@ -16902,11 +16902,11 @@ export namespace Prisma {
 
   export type PaymentWhereUniqueInput = Prisma.AtLeast<{
     id?: string
-    stripeSessionId?: string
-    stripeEventId?: string
+    flexpayOrderNumber?: string
     AND?: PaymentWhereInput | PaymentWhereInput[]
     OR?: PaymentWhereInput[]
     NOT?: PaymentWhereInput | PaymentWhereInput[]
+    providerReference?: StringNullableFilter<"Payment"> | string | null
     amount?: IntFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     status?: EnumPaymentStatusFilter<"Payment"> | $Enums.PaymentStatus
@@ -16915,12 +16915,12 @@ export namespace Prisma {
     planId?: StringFilter<"Payment"> | string
     client?: XOR<ClientScalarRelationFilter, ClientWhereInput>
     plan?: XOR<PlanScalarRelationFilter, PlanWhereInput>
-  }, "id" | "stripeSessionId" | "stripeEventId">
+  }, "id" | "flexpayOrderNumber">
 
   export type PaymentOrderByWithAggregationInput = {
     id?: SortOrder
-    stripeSessionId?: SortOrder
-    stripeEventId?: SortOrder
+    flexpayOrderNumber?: SortOrder
+    providerReference?: SortOrderInput | SortOrder
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
@@ -16939,8 +16939,8 @@ export namespace Prisma {
     OR?: PaymentScalarWhereWithAggregatesInput[]
     NOT?: PaymentScalarWhereWithAggregatesInput | PaymentScalarWhereWithAggregatesInput[]
     id?: StringWithAggregatesFilter<"Payment"> | string
-    stripeSessionId?: StringWithAggregatesFilter<"Payment"> | string
-    stripeEventId?: StringWithAggregatesFilter<"Payment"> | string
+    flexpayOrderNumber?: StringWithAggregatesFilter<"Payment"> | string
+    providerReference?: StringNullableWithAggregatesFilter<"Payment"> | string | null
     amount?: IntWithAggregatesFilter<"Payment"> | number
     currency?: StringWithAggregatesFilter<"Payment"> | string
     status?: EnumPaymentStatusWithAggregatesFilter<"Payment"> | $Enums.PaymentStatus
@@ -17702,8 +17702,8 @@ export namespace Prisma {
 
   export type PaymentCreateInput = {
     id?: string
-    stripeSessionId: string
-    stripeEventId: string
+    flexpayOrderNumber: string
+    providerReference?: string | null
     amount: number
     currency: string
     status?: $Enums.PaymentStatus
@@ -17714,8 +17714,8 @@ export namespace Prisma {
 
   export type PaymentUncheckedCreateInput = {
     id?: string
-    stripeSessionId: string
-    stripeEventId: string
+    flexpayOrderNumber: string
+    providerReference?: string | null
     amount: number
     currency: string
     status?: $Enums.PaymentStatus
@@ -17726,8 +17726,8 @@ export namespace Prisma {
 
   export type PaymentUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    stripeSessionId?: StringFieldUpdateOperationsInput | string
-    stripeEventId?: StringFieldUpdateOperationsInput | string
+    flexpayOrderNumber?: StringFieldUpdateOperationsInput | string
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
@@ -17738,8 +17738,8 @@ export namespace Prisma {
 
   export type PaymentUncheckedUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
-    stripeSessionId?: StringFieldUpdateOperationsInput | string
-    stripeEventId?: StringFieldUpdateOperationsInput | string
+    flexpayOrderNumber?: StringFieldUpdateOperationsInput | string
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
@@ -17750,8 +17750,8 @@ export namespace Prisma {
 
   export type PaymentCreateManyInput = {
     id?: string
-    stripeSessionId: string
-    stripeEventId: string
+    flexpayOrderNumber: string
+    providerReference?: string | null
     amount: number
     currency: string
     status?: $Enums.PaymentStatus
@@ -17762,8 +17762,8 @@ export namespace Prisma {
 
   export type PaymentUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
-    stripeSessionId?: StringFieldUpdateOperationsInput | string
-    stripeEventId?: StringFieldUpdateOperationsInput | string
+    flexpayOrderNumber?: StringFieldUpdateOperationsInput | string
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
@@ -17772,8 +17772,8 @@ export namespace Prisma {
 
   export type PaymentUncheckedUpdateManyInput = {
     id?: StringFieldUpdateOperationsInput | string
-    stripeSessionId?: StringFieldUpdateOperationsInput | string
-    stripeEventId?: StringFieldUpdateOperationsInput | string
+    flexpayOrderNumber?: StringFieldUpdateOperationsInput | string
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
@@ -18513,8 +18513,8 @@ export namespace Prisma {
 
   export type PaymentCountOrderByAggregateInput = {
     id?: SortOrder
-    stripeSessionId?: SortOrder
-    stripeEventId?: SortOrder
+    flexpayOrderNumber?: SortOrder
+    providerReference?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
@@ -18529,8 +18529,8 @@ export namespace Prisma {
 
   export type PaymentMaxOrderByAggregateInput = {
     id?: SortOrder
-    stripeSessionId?: SortOrder
-    stripeEventId?: SortOrder
+    flexpayOrderNumber?: SortOrder
+    providerReference?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
@@ -18541,8 +18541,8 @@ export namespace Prisma {
 
   export type PaymentMinOrderByAggregateInput = {
     id?: SortOrder
-    stripeSessionId?: SortOrder
-    stripeEventId?: SortOrder
+    flexpayOrderNumber?: SortOrder
+    providerReference?: SortOrder
     amount?: SortOrder
     currency?: SortOrder
     status?: SortOrder
@@ -20117,8 +20117,8 @@ export namespace Prisma {
 
   export type PaymentCreateWithoutClientInput = {
     id?: string
-    stripeSessionId: string
-    stripeEventId: string
+    flexpayOrderNumber: string
+    providerReference?: string | null
     amount: number
     currency: string
     status?: $Enums.PaymentStatus
@@ -20128,8 +20128,8 @@ export namespace Prisma {
 
   export type PaymentUncheckedCreateWithoutClientInput = {
     id?: string
-    stripeSessionId: string
-    stripeEventId: string
+    flexpayOrderNumber: string
+    providerReference?: string | null
     amount: number
     currency: string
     status?: $Enums.PaymentStatus
@@ -20290,8 +20290,8 @@ export namespace Prisma {
     OR?: PaymentScalarWhereInput[]
     NOT?: PaymentScalarWhereInput | PaymentScalarWhereInput[]
     id?: StringFilter<"Payment"> | string
-    stripeSessionId?: StringFilter<"Payment"> | string
-    stripeEventId?: StringFilter<"Payment"> | string
+    flexpayOrderNumber?: StringFilter<"Payment"> | string
+    providerReference?: StringNullableFilter<"Payment"> | string | null
     amount?: IntFilter<"Payment"> | number
     currency?: StringFilter<"Payment"> | string
     status?: EnumPaymentStatusFilter<"Payment"> | $Enums.PaymentStatus
@@ -20342,8 +20342,8 @@ export namespace Prisma {
 
   export type PaymentCreateWithoutPlanInput = {
     id?: string
-    stripeSessionId: string
-    stripeEventId: string
+    flexpayOrderNumber: string
+    providerReference?: string | null
     amount: number
     currency: string
     status?: $Enums.PaymentStatus
@@ -20353,8 +20353,8 @@ export namespace Prisma {
 
   export type PaymentUncheckedCreateWithoutPlanInput = {
     id?: string
-    stripeSessionId: string
-    stripeEventId: string
+    flexpayOrderNumber: string
+    providerReference?: string | null
     amount: number
     currency: string
     status?: $Enums.PaymentStatus
@@ -21386,8 +21386,8 @@ export namespace Prisma {
 
   export type PaymentCreateManyClientInput = {
     id?: string
-    stripeSessionId: string
-    stripeEventId: string
+    flexpayOrderNumber: string
+    providerReference?: string | null
     amount: number
     currency: string
     status?: $Enums.PaymentStatus
@@ -21473,8 +21473,8 @@ export namespace Prisma {
 
   export type PaymentUpdateWithoutClientInput = {
     id?: StringFieldUpdateOperationsInput | string
-    stripeSessionId?: StringFieldUpdateOperationsInput | string
-    stripeEventId?: StringFieldUpdateOperationsInput | string
+    flexpayOrderNumber?: StringFieldUpdateOperationsInput | string
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
@@ -21484,8 +21484,8 @@ export namespace Prisma {
 
   export type PaymentUncheckedUpdateWithoutClientInput = {
     id?: StringFieldUpdateOperationsInput | string
-    stripeSessionId?: StringFieldUpdateOperationsInput | string
-    stripeEventId?: StringFieldUpdateOperationsInput | string
+    flexpayOrderNumber?: StringFieldUpdateOperationsInput | string
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
@@ -21495,8 +21495,8 @@ export namespace Prisma {
 
   export type PaymentUncheckedUpdateManyWithoutClientInput = {
     id?: StringFieldUpdateOperationsInput | string
-    stripeSessionId?: StringFieldUpdateOperationsInput | string
-    stripeEventId?: StringFieldUpdateOperationsInput | string
+    flexpayOrderNumber?: StringFieldUpdateOperationsInput | string
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
@@ -21517,8 +21517,8 @@ export namespace Prisma {
 
   export type PaymentCreateManyPlanInput = {
     id?: string
-    stripeSessionId: string
-    stripeEventId: string
+    flexpayOrderNumber: string
+    providerReference?: string | null
     amount: number
     currency: string
     status?: $Enums.PaymentStatus
@@ -21569,8 +21569,8 @@ export namespace Prisma {
 
   export type PaymentUpdateWithoutPlanInput = {
     id?: StringFieldUpdateOperationsInput | string
-    stripeSessionId?: StringFieldUpdateOperationsInput | string
-    stripeEventId?: StringFieldUpdateOperationsInput | string
+    flexpayOrderNumber?: StringFieldUpdateOperationsInput | string
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
@@ -21580,8 +21580,8 @@ export namespace Prisma {
 
   export type PaymentUncheckedUpdateWithoutPlanInput = {
     id?: StringFieldUpdateOperationsInput | string
-    stripeSessionId?: StringFieldUpdateOperationsInput | string
-    stripeEventId?: StringFieldUpdateOperationsInput | string
+    flexpayOrderNumber?: StringFieldUpdateOperationsInput | string
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
@@ -21591,8 +21591,8 @@ export namespace Prisma {
 
   export type PaymentUncheckedUpdateManyWithoutPlanInput = {
     id?: StringFieldUpdateOperationsInput | string
-    stripeSessionId?: StringFieldUpdateOperationsInput | string
-    stripeEventId?: StringFieldUpdateOperationsInput | string
+    flexpayOrderNumber?: StringFieldUpdateOperationsInput | string
+    providerReference?: NullableStringFieldUpdateOperationsInput | string | null
     amount?: IntFieldUpdateOperationsInput | number
     currency?: StringFieldUpdateOperationsInput | string
     status?: EnumPaymentStatusFieldUpdateOperationsInput | $Enums.PaymentStatus
