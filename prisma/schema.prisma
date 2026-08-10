@@ -1,21 +1,20 @@
-datasource db {
-  provider  = "postgresql"
-  url       = env("DATABASE_URL")
-  directUrl = env("DIRECT_URL")
-}
+// Prisma schema for Hag & Ink
 
 generator client {
-  provider        = "prisma-client-js"
+  provider = "prisma-client-js"
   output   = "../generated/prisma"
 }
 
-// --- ENUMS ---
+// Database configuration is now supplied via prisma.config.ts for Prisma 7.
+datasource db {
+  provider = "postgresql"
+}
 
 enum Role {
   CEO
   MANAGER
   BARBER
-  CLEANER  // <--- Ajouté ici
+  CLEANER
   CLIENT
 }
 
@@ -32,20 +31,17 @@ enum PaymentStatus {
   FAILED
 }
 
-// --- CONFIGURATION UTILISATEURS & EMPLOYÉS ---
-
 model User {
   id        String   @id @default(uuid())
   email     String   @unique
-  password  String   // Hashé en production
+  password  String
   role      Role     @default(CLIENT)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
 
-  // Relations
   barberProfile Barber?
   clientProfile Client?
-  expenses      Expense[] // <--- Ajouté pour lier les paiements de salaires (ex: Nettoyeur)
+  expenses      Expense[]
 }
 
 model Barber {
@@ -53,18 +49,15 @@ model Barber {
   firstName      String
   lastName       String
   phone          String?
-  salaryType     String   @default("COMMISSION") // "FIXED", "COMMISSION", "MIXED"
-  fixedSalary    Float    @default(0.0)          // Pour le manager par exemple
-  commissionRate Float    @default(0.25)         // ex: 0.30 pour Bilal, 0.25 pour les autres
+  salaryType     String   @default("COMMISSION")
+  fixedSalary    Float    @default(0.0)
+  commissionRate Float    @default(0.25)
   userId         String?  @unique
   user           User?    @relation(fields: [userId], references: [id], onDelete: Cascade)
 
-  // Relations business
   services     Service[]
   appointments Appointment[]
 }
-
-// --- ESPACE CLIENT B2C ---
 
 model Client {
   id        String   @id @default(uuid())
@@ -75,12 +68,10 @@ model Client {
   userId    String?  @unique
   user      User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 
-  // Plans & Abonnements (B2C)
   planId     String?
   plan       Plan?    @relation(fields: [planId], references: [id])
   planEndsAt DateTime?
 
-  // Relations
   appointments   Appointment[]
   services       Service[]
   lotteryTickets LotteryTicket[]
@@ -90,10 +81,10 @@ model Client {
 
 model Plan {
   id           String    @id @default(uuid())
-  name         String    // ex: "Forfait Silver", "Forfait Gold"
+  name         String
   price        Float
   durationDays Int       @default(30)
-  features     String[]  // Avantages du forfait
+  features     String[]
   clients      Client[]
   payments     Payment[]
 }
@@ -102,22 +93,20 @@ model Appointment {
   id        String            @id @default(uuid())
   dateTime  DateTime
   status    AppointmentStatus @default(PENDING)
-  
+
   clientId  String
   client    Client            @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  
+
   barberId  String
   barber    Barber            @relation(fields: [barberId], references: [id], onDelete: Cascade)
 
   createdAt DateTime          @default(now())
 }
 
-// --- REVENUS & OPÉRATIONS (SERVICES ET PRODUITS) ---
-
 model Service {
   id            String   @id @default(uuid())
-  amount        Float    // Montant total payé
-  priceType     String   @default("FIXED") // "FIXED" ou "FREE"
+  amount        Float
+  priceType     String   @default("FIXED")
   createdAt     DateTime @default(now())
 
   barberId      String
@@ -126,23 +115,19 @@ model Service {
   clientId      String?
   client        Client?  @relation(fields: [clientId], references: [id], onDelete: SetNull)
 
-  // Lien vers la facturation numérique conforme
   invoice       Invoice?
-  
-  // Consommation de produits lors de la coupe
   usedProducts  ServiceProduct[]
 }
 
 model Product {
   id             String   @id @default(uuid())
   name           String
-  sku            String   @unique // Code barre / Identifiant unique
-  purchasePrice  Float    // Visible uniquement par Haggi (CEO)
-  sellingPrice   Float    // Visible par Henock et Haggi
+  sku            String   @unique
+  purchasePrice  Float
+  sellingPrice   Float
   stockQty       Int      @default(0)
-  isConsumable   Boolean  @default(false) // Produit de revente ou produit interne
+  isConsumable   Boolean  @default(false)
 
-  // Relations
   usedInServices ServiceProduct[]
 }
 
@@ -156,12 +141,10 @@ model ServiceProduct {
   @@id([serviceId, productId])
 }
 
-// --- FACTURATION & CONFORMITÉ LÉGALE ---
-
 model Invoice {
   id            String        @id @default(uuid())
-  invoiceNumber String        @unique // Format: INV-2026-XXXX
-  pdfUrl        String?       // Stockage Cloud pour envoi WhatsApp / Mail
+  invoiceNumber String        @unique
+  pdfUrl        String?
   paymentStatus PaymentStatus @default(PENDING)
   createdAt     DateTime      @default(now())
 
@@ -169,42 +152,33 @@ model Invoice {
   service       Service       @relation(fields: [serviceId], references: [id], onDelete: Cascade)
 }
 
-// --- DÉPENSES ---
-
 model Expense {
   id          String   @id @default(uuid())
   amount      Float
   description String
-  isValidated Boolean  @default(false) // Validé par Haggi (CEO)
+  isValidated Boolean  @default(false)
   createdAt   DateTime @default(now())
 
-  // --- NOUVEAU : Lien vers l'employé pour le suivi des paies ---
-  userId      String?  
+  userId      String?
   user        User?    @relation(fields: [userId], references: [id], onDelete: SetNull)
 }
 
-// --- MARKETING & FIDÉLISATION (LOTERIE) ---
-
 model LotteryTicket {
   id        String   @id @default(uuid())
-  ticketNum String   @unique // ex: TICKET-2026-991A
+  ticketNum String   @unique
   drawDate  DateTime
   isWinner  Boolean  @default(false)
-  
+
   clientId  String
   client    Client   @relation(fields: [clientId], references: [id], onDelete: Cascade)
-  
+
   createdAt DateTime @default(now())
 }
 
-// --- PAIEMENTS FLEXPAY ---
-
 model Payment {
   id                 String        @id @default(uuid())
-  
   flexpayOrderNumber String        @unique
-  providerReference  String?       
-  
+  providerReference  String?
   amount             Int
   currency           String
   status             PaymentStatus @default(PAID)
