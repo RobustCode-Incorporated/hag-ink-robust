@@ -3,9 +3,9 @@ import prisma from '@/lib/prisma';
 import { compare, hash } from 'bcryptjs';
 import type { Role } from '@/../generated/prisma/client';
 import {
+  buildSessionCookieOptions,
   createSessionToken,
   SESSION_COOKIE_NAME,
-  SESSION_TTL_SECONDS,
   type AuthRole,
   roleHome,
 } from '@/lib/auth';
@@ -93,11 +93,7 @@ export async function POST(request: Request) {
     response.cookies.set({
       name: SESSION_COOKIE_NAME,
       value: token,
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: SESSION_TTL_SECONDS,
-      path: '/',
+      ...buildSessionCookieOptions(),
     });
     return response;
   } catch (error) {

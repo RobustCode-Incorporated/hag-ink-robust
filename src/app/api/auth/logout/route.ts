@@ -1,35 +1,12 @@
 import { NextResponse } from 'next/server';
-import { SESSION_COOKIE_NAME } from '@/lib/auth';
+import { expiredSessionCookieOptionsForDomain, SESSION_COOKIE_NAME } from '@/lib/auth';
 
-type CookieDomainVariant = 'host' | 'www' | 'apex' | 'wildcard';
-
-function clearSessionCookie(response: NextResponse, domainVariant: CookieDomainVariant = 'host') {
-  const cookieOptions: {
-    name: string;
-    value: string;
-    path: string;
-    maxAge: number;
-    expires: Date;
-    httpOnly: boolean;
-    sameSite: 'lax';
-    secure: boolean;
-    domain?: string;
-  } = {
+function clearSessionCookie(response: NextResponse, domainVariant: Parameters<typeof expiredSessionCookieOptionsForDomain>[0] = 'host') {
+  response.cookies.set({
     name: SESSION_COOKIE_NAME,
     value: '',
-    path: '/',
-    maxAge: 0,
-    expires: new Date(0),
-    httpOnly: true,
-    sameSite: 'lax',
-    secure: process.env.NODE_ENV === 'production',
-  };
-
-  if (domainVariant === 'www') cookieOptions.domain = 'www.hag-ink.com';
-  if (domainVariant === 'apex') cookieOptions.domain = 'hag-ink.com';
-  if (domainVariant === 'wildcard') cookieOptions.domain = '.hag-ink.com';
-
-  response.cookies.set(cookieOptions);
+    ...expiredSessionCookieOptionsForDomain(domainVariant),
+  });
 }
 
 function clearAllSessionCookieVariants(response: NextResponse) {

@@ -1,7 +1,7 @@
 "use client";
 import { Geist, Geist_Mono } from "next/font/google";
 import Link from 'next/link';
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { managementRoleFromPath } from '@/lib/management-navigation';
 import ManagementNav from '@/components/navigation/ManagementNav';
 import "./globals.css";
@@ -11,20 +11,14 @@ const geistMono = Geist_Mono({ variable: "--font-geist-mono", subsets: ["latin"]
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   const pathname = usePathname();
+  const router = useRouter();
   const role = managementRoleFromPath(pathname);
 
   const hideNav = role === null;
 
   const logout = async () => {
-    try {
-      await fetch('/api/auth/logout', {
-        method: 'POST',
-        credentials: 'include',
-        cache: 'no-store',
-      });
-    } finally {
-      window.location.assign('/login');
-    }
+    window.location.assign('/api/auth/logout');
+    router.refresh();
   };
 
   return (

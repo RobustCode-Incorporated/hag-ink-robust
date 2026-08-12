@@ -18,6 +18,15 @@ describe('ManagementNav integration', () => {
     expect(logoutButton).toHaveAttribute('type', 'button');
   });
 
+  it('calls the provided logout handler when clicked', () => {
+    const onLogout = vi.fn();
+    render(<ManagementNav role="CEO" onLogout={onLogout} />);
+
+    fireEvent.click(screen.getByRole('button', { name: 'Deconnexion' }));
+
+    expect(onLogout).toHaveBeenCalledTimes(1);
+  });
+
   it('opens the exact CEO destinations on each tab click', () => {
     render(<ManagementNav role="CEO" onLogout={() => undefined} />);
 

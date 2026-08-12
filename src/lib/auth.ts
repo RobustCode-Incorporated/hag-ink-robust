@@ -5,6 +5,18 @@ export type AuthRole = 'CEO' | 'MANAGER';
 export const SESSION_COOKIE_NAME = 'hag_session';
 export const SESSION_TTL_SECONDS = 60 * 60 * 8;
 
+export type SessionCookieOptions = {
+  httpOnly: true;
+  sameSite: 'lax';
+  secure: boolean;
+  path: '/';
+  maxAge: number;
+  expires?: Date;
+  domain?: string;
+};
+
+type CookieDomainVariant = 'host' | 'www' | 'apex' | 'wildcard';
+
 export type SessionPayload = JWTPayload & {
   role: AuthRole;
   email: string;
@@ -51,4 +63,31 @@ export async function verifySessionToken(token: string): Promise<SessionPayload 
 
 export function roleHome(role: AuthRole): string {
   return role === 'CEO' ? '/ceo' : '/manager';
+}
+
+export function buildSessionCookieOptions(): SessionCookieOptions {
+  return {
+    httpOnly: true,
+    sameSite: 'lax',
+    secure: process.env.NODE_ENV === 'production',
+    maxAge: SESSION_TTL_SECONDS,
+    path: '/',
+  };
+}
+
+export function sessionCookieOptionsForDomain(domainVariant: CookieDomainVariant): SessionCookieOptions {
+  const options = buildSessionCookieOptions();
+
+  if (domainVariant === 'www') return { ...options, domain: 'www.hag-ink.com' };
+  if (domainVariant === 'apex') return { ...options, domain: 'hag-ink.com' };
+  if (domainVariant === 'wildcard') return { ...options, domain: '.hag-ink.com' };
+  return options;
+}
+
+export function expiredSessionCookieOptionsForDomain(domainVariant: CookieDomainVariant): SessionCookieOptions {
+  return {
+    ...sessionCookieOptionsForDomain(domainVariant),
+    maxAge: 0,
+    expires: new Date(0),
+  };
 }
