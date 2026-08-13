@@ -455,6 +455,25 @@ export default function ClientPage() {
           )}
         </form>}
       </SlideOver>
+
+      <footer className="border-t border-neutral-800 bg-[#050505] text-neutral-400">
+        <div className="mx-auto flex max-w-7xl flex-col gap-6 px-4 py-10 md:flex-row md:items-center md:justify-between">
+          <div>
+            <div className="text-xs font-bold uppercase tracking-[0.28em] text-neutral-500">Hag &amp; Ink</div>
+            <p className="mt-2 text-sm text-neutral-400">Premium Barber &amp; Tattoo</p>
+          </div>
+
+          <div className="flex flex-wrap items-center gap-4 text-sm">
+            <button type="button" onClick={() => window.scrollTo({ top: 0, behavior: 'smooth' })} className="text-neutral-300 transition hover:text-white">Accueil</button>
+            <button type="button" onClick={() => document.getElementById('memberships')?.scrollIntoView({ behavior: 'smooth' })} className="text-neutral-300 transition hover:text-white">Memberships</button>
+            <button type="button" onClick={() => setIsBookingOpen(true)} className="text-neutral-300 transition hover:text-white">Réserver</button>
+          </div>
+
+          <div className="text-sm text-neutral-500">
+            © {new Date().getFullYear()} Hag &amp; Ink
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }
