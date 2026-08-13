@@ -496,47 +496,37 @@ export default function ClientPage() {
         </form>}
       </SlideOver>
           {/* --- FOOTER --- */}
-      <footer className="bg-black text-neutral-300 border-t border-neutral-800 mt-20">
-        <div className="max-w-7xl mx-auto px-6 py-12 grid grid-cols-1 md:grid-cols-3 gap-8">
-          {/* Contact & Address */}
-          <div>
-            <h3 className="text-white font-bold uppercase text-sm tracking-wider mb-4">Hag & Ink Salon</h3>
-            <p className="text-sm leading-relaxed mb-4">
+      <footer className="relative mt-20 border-t border-neutral-800 bg-[#050505] text-neutral-300">
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white/[0.02] to-transparent"></div>
+        <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 py-12 md:grid-cols-3">
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-[0.28em] text-neutral-500">Hag & Ink Salon</h3>
+            <p className="text-sm leading-relaxed text-neutral-300">
               2 Avenue Colonel Lukusa<br />
               C/Gombe<br />
               Kinshasa
             </p>
-            <p className="text-sm">
-              📞 <a href="tel:+243841938211" className="text-white hover:text-neutral-200 transition">+243 841938211</a>
+            <p className="text-sm text-neutral-300">
+              📞 <a href="tel:+243841938211" className="font-medium text-white transition hover:text-neutral-200">+243 841938211</a>
             </p>
-            <p className="text-xs text-neutral-500 mt-2">(Ref: Rond point Forescom)</p>
+            <p className="text-xs text-neutral-500">(Ref: Rond point Forescom)</p>
           </div>
 
-          {/* Social Links */}
-          <div>
-            <h3 className="text-white font-bold uppercase text-sm tracking-wider mb-4">Suivez-nous</h3>
-            <div className="space-y-2">
-              <a href="https://snapchat.com/t/sEt19KQ5" target="_blank" rel="noopener noreferrer" className="block text-sm text-neutral-300 hover:text-white transition">
-                Snapchat
-              </a>
-              <a href="https://www.tiktok.com/@hagink2?_r=1&_t=ZS-98PmQyaEMOT" target="_blank" rel="noopener noreferrer" className="block text-sm text-neutral-300 hover:text-white transition">
-                TikTok
-              </a>
-              <a href="https://www.instagram.com/hag_ink_barber_243/" target="_blank" rel="noopener noreferrer" className="block text-sm text-neutral-300 hover:text-white transition">
-                Instagram
-              </a>
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-[0.28em] text-neutral-500">Suivez-nous</h3>
+            <div className="space-y-2 text-sm">
+              <a href="https://snapchat.com/t/sEt19KQ5" target="_blank" rel="noopener noreferrer" className="block text-neutral-300 transition hover:text-white">Snapchat</a>
+              <a href="https://www.tiktok.com/@hagink2?_r=1&_t=ZS-98PmQyaEMOT" target="_blank" rel="noopener noreferrer" className="block text-neutral-300 transition hover:text-white">TikTok</a>
+              <a href="https://www.instagram.com/hag_ink_barber_243/" target="_blank" rel="noopener noreferrer" className="block text-neutral-300 transition hover:text-white">Instagram</a>
             </div>
           </div>
 
-          {/* Developer Info */}
-          <div>
-            <h3 className="text-white font-bold uppercase text-sm tracking-wider mb-4">À propos</h3>
-            <p className="text-sm leading-relaxed mb-3">
-              Site développé par <a href="https://www.robust-code.com" target="_blank" rel="noopener noreferrer" className="text-white hover:text-neutral-200 transition font-semibold">ROBUST CODE S.A.R.L</a>
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-[0.28em] text-neutral-500">À propos</h3>
+            <p className="text-sm leading-relaxed text-neutral-300">
+              Site développé par <a href="https://www.robust-code.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-white transition hover:text-neutral-200">ROBUST CODE S.A.R.L</a>
             </p>
-            <p className="text-xs text-neutral-500">
-              © Tous droits réservés — ROBUST CODE S.A.R.L
-            </p>
+            <p className="text-xs text-neutral-500">© Tous droits réservés — ROBUST CODE S.A.R.L</p>
           </div>
         </div>
       </footer>
