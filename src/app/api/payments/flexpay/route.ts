@@ -11,6 +11,19 @@ type CheckoutBody = {
   paymentType: unknown;
 };
 
+async function parseFlexpayResponse(response: Response, label: string) {
+  const rawBody = await response.text();
+  try {
+    return JSON.parse(rawBody) as { code?: string; message?: string; url?: string; orderNumber?: string };
+  } catch {
+    console.error(
+      `FlexPay ${label} a renvoyé une réponse non-JSON (status ${response.status}):`,
+      rawBody.slice(0, 500),
+    );
+    throw new Error(`Réponse FlexPay ${label} invalide (status ${response.status})`);
+  }
+}
+
 export async function POST(request: NextRequest) {
   try {
     const body = (await request.json()) as CheckoutBody;
@@ -22,7 +35,12 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Veuillez renseigner prénom, nom, téléphone et un plan valide.' }, { status: 400 });
     }
 
-    if (!process.env.FLEXPAY_TOKEN || !process.env.FLEXPAY_MERCHANT) {
+    const flexpayToken = process.env.FLEXPAY_TOKEN?.trim();
+    const flexpayMerchant = process.env.FLEXPAY_MERCHANT?.trim();
+    const flexpayMobileUrl = process.env.FLEXPAY_MOBILE_URL?.trim();
+    const flexpayCardUrl = process.env.FLEXPAY_CARD_URL?.trim();
+
+    if (!flexpayToken || !flexpayMerchant || !flexpayMobileUrl || !flexpayCardUrl) {
       return NextResponse.json({ error: 'Le paiement FlexPay n’est pas encore configuré.' }, { status: 503 });
     }
 
@@ -87,12 +105,12 @@ export async function POST(request: NextRequest) {
     const reference = `HAG_${client.id}_${plan.id}_${Date.now()}`;
     const amount = plan.price.toString();
     const currency = 'USD';
-    const bearerToken = `Bearer ${process.env.FLEXPAY_TOKEN}`;
+    const bearerToken = `Bearer ${flexpayToken}`;
 
     // Mobile Money (type 1)
     if (body.paymentType === '1') {
       const payload = {
-        merchant: process.env.FLEXPAY_MERCHANT,
+        merchant: flexpayMerchant,
         type: '1',
         phone: cleanPhone,
         reference,
@@ -101,7 +119,7 @@ export async function POST(request: NextRequest) {
         callbackUrl: `${request.nextUrl.origin}/api/payments/webhook`,
       };
 
-      const response = await fetch(process.env.FLEXPAY_MOBILE_URL!, {
+      const response = await fetch(flexpayMobileUrl, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -110,7 +128,7 @@ export async function POST(request: NextRequest) {
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const data = await parseFlexpayResponse(response, 'Mobile Money');
       if (data.code !== '0') throw new Error(data.message || 'Erreur FlexPay Mobile Money');
       return NextResponse.json({ message: data.message, orderNumber: data.orderNumber });
     }
@@ -119,7 +137,7 @@ export async function POST(request: NextRequest) {
     if (body.paymentType === '2') {
       const payload = {
         authorization: bearerToken,
-        merchant: process.env.FLEXPAY_MERCHANT,
+        merchant: flexpayMerchant,
         reference,
         amount,
         currency,
@@ -130,13 +148,13 @@ export async function POST(request: NextRequest) {
         decline_url: `${request.nextUrl.origin}/client?payment=failed`,
       };
 
-      const response = await fetch(process.env.FLEXPAY_CARD_URL!, {
+      const response = await fetch(flexpayCardUrl, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(payload),
       });
 
-      const data = await response.json();
+      const data = await parseFlexpayResponse(response, 'Card');
       if (data.code !== '0') throw new Error(data.message || 'Erreur FlexPay Card');
       return NextResponse.json({ url: data.url, orderNumber: data.orderNumber });
     }
