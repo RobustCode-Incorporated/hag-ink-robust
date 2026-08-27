@@ -23,25 +23,66 @@ export async function POST(request: NextRequest) {
     }
 
     if (!process.env.FLEXPAY_TOKEN || !process.env.FLEXPAY_MERCHANT) {
-      return NextResponse.json({ error: 'Le paiement FlexPay n\u2019est pas encore configuré.' }, { status: 503 });
+      return NextResponse.json({ error: 'Le paiement FlexPay n’est pas encore configuré.' }, { status: 503 });
     }
 
     const plan = await prisma.plan.findFirst({ where: { name: body.planName } });
     const approvedPlan = getPlanDefinition(body.planName);
     if (!plan || plan.price !== approvedPlan.price || plan.durationDays !== approvedPlan.durationDays) {
-      return NextResponse.json({ error: 'Cette formule n\u2019est pas disponible actuellement.' }, { status: 409 });
+      return NextResponse.json({ error: 'Cette formule n’est pas disponible actuellement.' }, { status: 409 });
     }
 
-    const firstName = body.firstName as string;
-    const lastName = body.lastName as string;
-    const phone = body.phone as string;
-    const email = typeof body.email === 'string' && body.email.trim() ? body.email.trim() : null;
+    const firstName = (body.firstName as string).trim();
+    const lastName = (body.lastName as string).trim();
+    const cleanPhone = (body.phone as string).trim();
+    const cleanEmail = typeof body.email === 'string' && body.email.trim() ? body.email.trim() : null;
 
-    const client = await prisma.client.upsert({
-      where: { phone: phone.trim() },
-      create: { firstName: firstName.trim(), lastName: lastName.trim(), phone: phone.trim(), email },
-      update: { firstName: firstName.trim(), lastName: lastName.trim(), email },
-    });
+    // === GESTION DU CLIENT (Résolution sécurisée des contraintes uniques phone/email) ===
+    let client = await prisma.client.findUnique({ where: { phone: cleanPhone } });
+
+    if (client) {
+      let safeEmail = client.email;
+      if (cleanEmail && cleanEmail !== client.email) {
+        const emailOwner = await prisma.client.findUnique({ where: { email: cleanEmail } });
+        if (!emailOwner) {
+          safeEmail = cleanEmail;
+        }
+      }
+
+      client = await prisma.client.update({
+        where: { id: client.id },
+        data: {
+          firstName,
+          lastName,
+          email: safeEmail,
+        },
+      });
+    } else {
+      if (cleanEmail) {
+        const clientByEmail = await prisma.client.findUnique({ where: { email: cleanEmail } });
+        if (clientByEmail) {
+          client = await prisma.client.update({
+            where: { id: clientByEmail.id },
+            data: {
+              firstName,
+              lastName,
+              phone: cleanPhone,
+            },
+          });
+        }
+      }
+
+      if (!client) {
+        client = await prisma.client.create({
+          data: {
+            firstName,
+            lastName,
+            phone: cleanPhone,
+            email: cleanEmail,
+          },
+        });
+      }
+    }
 
     const reference = `HAG_${client.id}_${plan.id}_${Date.now()}`;
     const amount = plan.price.toString();
@@ -53,7 +94,7 @@ export async function POST(request: NextRequest) {
       const payload = {
         merchant: process.env.FLEXPAY_MERCHANT,
         type: '1',
-        phone: phone.trim(),
+        phone: cleanPhone,
         reference,
         amount,
         currency,
