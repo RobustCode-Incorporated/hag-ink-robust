@@ -9,6 +9,18 @@ function generateReference() {
   return `HAG${timestamp}${random}`; // well under FlexPay's 50-char limit
 }
 
+// FlexPay Mobile Money attend exactement l'indicatif RDC + 9 chiffres, sans "+" (ex: "243841938211").
+function normalizeDrcPhoneForFlexpay(rawPhone: string): string | null {
+  let digits = rawPhone.replace(/[^\d+]/g, '');
+  if (digits.startsWith('+')) digits = digits.slice(1);
+  else if (digits.startsWith('00')) digits = digits.slice(2);
+
+  if (digits.startsWith('0')) digits = `243${digits.slice(1)}`;
+  else if (!digits.startsWith('243')) digits = `243${digits}`;
+
+  return /^243\d{9}$/.test(digits) ? digits : null;
+}
+
 type CheckoutBody = {
   planName: unknown;
   firstName: unknown;
@@ -116,10 +128,18 @@ export async function POST(request: NextRequest) {
 
     // Mobile Money (type 1)
     if (body.paymentType === '1') {
+      const flexpayPhone = normalizeDrcPhoneForFlexpay(cleanPhone);
+      if (!flexpayPhone) {
+        return NextResponse.json(
+          { error: 'Numéro de téléphone invalide pour Mobile Money (format attendu : +243841938211).' },
+          { status: 400 },
+        );
+      }
+
       const payload = {
         merchant: flexpayMerchant,
         type: '1',
-        phone: cleanPhone,
+        phone: flexpayPhone,
         reference,
         amount,
         currency,
