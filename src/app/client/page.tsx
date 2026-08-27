@@ -45,12 +45,20 @@ export default function ClientPage() {
     { code: "LOCKS_B", name: "Locks B", target: "Locks Premium", value: 350, price: 329, desc: "Jusqu’à 5 prestations", perks: ["Économie majeure", "Service ultra-prioritaire"] },
   ];
 
+  const INTL_PHONE_RE = /^\+\d{7,15}$/;
+
   const startCheckout = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     if (!selectedPlan) return;
     
     setCheckoutError(null); 
     setCheckoutSuccess(null);
+
+    if (!INTL_PHONE_RE.test(form.phone.trim())) {
+      setCheckoutError('Le numéro doit commencer par le code pays, ex : +243841938211');
+      return;
+    }
+
     setIsSubmitting(true);
     
     try {
@@ -90,6 +98,12 @@ export default function ClientPage() {
     event.preventDefault();
     setBookingError(null);
     setBookingSuccess(null);
+
+    if (!INTL_PHONE_RE.test(bookingForm.phone.trim())) {
+      setBookingError('Le numéro doit commencer par le code pays, ex : +243841938211');
+      return;
+    }
+
     setIsBookingSubmitting(true);
 
     try {
@@ -344,18 +358,31 @@ export default function ClientPage() {
             Choisis une date, une heure et le type de séance. Après validation, tu es redirigé vers WhatsApp du salon avec toutes les informations pré-remplies.
           </p>
 
-          {[['firstName', 'Prénom'], ['lastName', 'Nom'], ['phone', 'Téléphone']].map(([field, label]) => (
+          {[['firstName', 'Prénom'], ['lastName', 'Nom']].map(([field, label]) => (
             <label key={field} className="block text-sm text-neutral-300">
               {label}
               <input
                 required
                 type="text"
-                value={bookingForm[field as 'firstName' | 'lastName' | 'phone']}
+                value={bookingForm[field as 'firstName' | 'lastName']}
                 onChange={(event) => setBookingForm({ ...bookingForm, [field]: event.target.value })}
                 className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white"
               />
             </label>
           ))}
+
+          <label className="block text-sm text-neutral-300">
+            Téléphone
+            <input
+              required
+              type="tel"
+              placeholder="+243841938211"
+              value={bookingForm.phone}
+              onChange={(event) => setBookingForm({ ...bookingForm, phone: event.target.value })}
+              className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white"
+            />
+            <span className="text-xs text-neutral-500 mt-1 block">Commencez par le code pays, ex&nbsp;: +243841938211</span>
+          </label>
 
           <label className="block text-sm text-neutral-300">
             Type de séance
@@ -422,12 +449,25 @@ export default function ClientPage() {
           
           <p className="text-sm text-neutral-400">Vos informations créent votre profil client Hag & Ink. Le paiement est traité de manière sécurisée par FlexPay.</p>
           
-          {[['firstName', 'Prénom', 'text'], ['lastName', 'Nom', 'text'], ['phone', 'Téléphone', 'tel'], ['email', 'E-mail (facultatif)', 'email']].map(([field, label, type]) => (
+          {[['firstName', 'Prénom', 'text'], ['lastName', 'Nom', 'text'], ['email', 'E-mail (facultatif)', 'email']].map(([field, label, type]) => (
             <label key={field} className="block text-sm text-neutral-300">
               {label}
               <input required={field !== 'email'} type={type} value={form[field as keyof typeof form]} onChange={(event) => setForm({ ...form, [field]: event.target.value })} className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white" />
             </label>
           ))}
+
+          <label className="block text-sm text-neutral-300">
+            Téléphone
+            <input
+              required
+              type="tel"
+              placeholder="+243841938211"
+              value={form.phone}
+              onChange={(event) => setForm({ ...form, phone: event.target.value })}
+              className="mt-2 w-full border border-neutral-700 bg-black px-3 py-3 text-white outline-none focus:border-white"
+            />
+            <span className="text-xs text-neutral-500 mt-1 block">Commencez par le code pays, ex&nbsp;: +243841938211 (requis pour Mobile Money)</span>
+          </label>
 
           {/* Sélecteur du mode de paiement FlexPay */}
           <label className="block text-sm text-neutral-300">
@@ -455,6 +495,42 @@ export default function ClientPage() {
           )}
         </form>}
       </SlideOver>
+          {/* --- FOOTER --- */}
+      <footer className="relative mt-20 border-t border-neutral-800 bg-[#050505] text-neutral-300">
+        <div className="absolute inset-0 pointer-events-none bg-gradient-to-b from-white/[0.02] to-transparent"></div>
+        <div className="relative mx-auto grid max-w-7xl grid-cols-1 gap-8 px-6 py-12 md:grid-cols-3">
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-[0.28em] text-neutral-500">Hag & Ink Salon</h3>
+            <p className="text-sm leading-relaxed text-neutral-300">
+              2 Avenue Colonel Lukusa<br />
+              C/Gombe<br />
+              Kinshasa
+            </p>
+            <p className="text-sm text-neutral-300">
+              📞 <a href="tel:+243841938211" className="font-medium text-white transition hover:text-neutral-200">+243 841938211</a>
+            </p>
+            <p className="text-xs text-neutral-500">(Ref: Rond point Forescom)</p>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-[0.28em] text-neutral-500">Suivez-nous</h3>
+            <div className="space-y-2 text-sm">
+              <a href="https://snapchat.com/t/sEt19KQ5" target="_blank" rel="noopener noreferrer" className="block text-neutral-300 transition hover:text-white">Snapchat</a>
+              <a href="https://www.tiktok.com/@hagink2?_r=1&_t=ZS-98PmQyaEMOT" target="_blank" rel="noopener noreferrer" className="block text-neutral-300 transition hover:text-white">TikTok</a>
+              <a href="https://www.instagram.com/hag_ink_barber_243/" target="_blank" rel="noopener noreferrer" className="block text-neutral-300 transition hover:text-white">Instagram</a>
+            </div>
+          </div>
+
+          <div className="space-y-3">
+            <h3 className="text-xs font-bold uppercase tracking-[0.28em] text-neutral-500">À propos</h3>
+            <p className="text-sm leading-relaxed text-neutral-300">
+              Site développé par <a href="https://www.robust-code.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-white transition hover:text-neutral-200">ROBUST CODE S.A.R.L</a>
+            </p>
+            <p className="text-xs text-neutral-500">© Tous droits réservés — ROBUST CODE S.A.R.L</p>
+          </div>
+        </div>
+      </footer>
+
     </main>
   );
 }
