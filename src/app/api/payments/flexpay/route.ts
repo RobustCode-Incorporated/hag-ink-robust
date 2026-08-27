@@ -1,6 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
+import { PaymentStatus } from '@/../generated/prisma/client';
 import prisma from '@/lib/prisma';
 import { getPlanDefinition, isPlanName } from '@/domains/subscription/subscribe';
+
+function generateReference() {
+  const timestamp = Date.now().toString(36).toUpperCase();
+  const random = Math.random().toString(36).slice(2, 8).toUpperCase();
+  return `HAG${timestamp}${random}`; // well under FlexPay's 50-char limit
+}
 
 type CheckoutBody = {
   planName: unknown;
@@ -102,7 +109,7 @@ export async function POST(request: NextRequest) {
       }
     }
 
-    const reference = `HAG_${client.id}_${plan.id}_${Date.now()}`;
+    const reference = generateReference();
     const amount = plan.price.toString();
     const currency = 'USD';
     const bearerToken = `Bearer ${flexpayToken}`;
@@ -129,7 +136,19 @@ export async function POST(request: NextRequest) {
       });
 
       const data = await parseFlexpayResponse(response, 'Mobile Money');
-      if (data.code !== '0') throw new Error(data.message || 'Erreur FlexPay Mobile Money');
+      if (data.code !== '0' || !data.orderNumber) throw new Error(data.message || 'Erreur FlexPay Mobile Money');
+
+      await prisma.payment.create({
+        data: {
+          flexpayOrderNumber: data.orderNumber,
+          amount: Math.round(plan.price),
+          currency,
+          status: PaymentStatus.PENDING,
+          clientId: client.id,
+          planId: plan.id,
+        },
+      });
+
       return NextResponse.json({ message: data.message, orderNumber: data.orderNumber });
     }
 
@@ -155,7 +174,19 @@ export async function POST(request: NextRequest) {
       });
 
       const data = await parseFlexpayResponse(response, 'Card');
-      if (data.code !== '0') throw new Error(data.message || 'Erreur FlexPay Card');
+      if (data.code !== '0' || !data.orderNumber) throw new Error(data.message || 'Erreur FlexPay Card');
+
+      await prisma.payment.create({
+        data: {
+          flexpayOrderNumber: data.orderNumber,
+          amount: Math.round(plan.price),
+          currency,
+          status: PaymentStatus.PENDING,
+          clientId: client.id,
+          planId: plan.id,
+        },
+      });
+
       return NextResponse.json({ url: data.url, orderNumber: data.orderNumber });
     }
 
