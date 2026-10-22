@@ -2,8 +2,13 @@
 
 import { RefObject, useEffect, useRef } from "react";
 
+export type VideoSources = {
+  landscape: { src: string; poster: string };
+  portrait: { src: string; poster: string };
+};
+
 // Vidéos générées par scripts/build-salon-video.py.
-const SOURCES = {
+export const SALON_SOURCES: VideoSources = {
   landscape: { src: "/video/salon-desktop.mp4", poster: "/video/salon-poster-desktop.jpg" },
   portrait: { src: "/video/salon-mobile.mp4", poster: "/video/salon-poster-mobile.jpg" },
 };
@@ -11,14 +16,24 @@ const SOURCES = {
 // Part de la vidéo jouée pendant l'intro (plans de l'intérieur du salon).
 // Le reste de la page joue les plans des outils puis le plan final.
 // Valeur tirée des temps affichés par le script de montage.
-const INTRO_SHARE = 0.46;
+const SALON_INTRO_SHARE = 0.46;
 
 type Props = {
   /** Section dont la hauteur de scroll couvre les plans de l'intérieur. */
   introRef: RefObject<HTMLElement | null>;
+  sources?: VideoSources;
+  /** Part de la vidéo jouée pendant introRef (1 = toute la vidéo). */
+  introShare?: number;
+  /** Assombrissement par-dessus la vidéo. */
+  overlayClassName?: string;
 };
 
-export default function ScrollVideoBackground({ introRef }: Props) {
+export default function ScrollVideoBackground({
+  introRef,
+  sources = SALON_SOURCES,
+  introShare = SALON_INTRO_SHARE,
+  overlayClassName = "bg-gradient-to-b from-black/60 via-black/20 to-black/70",
+}: Props) {
   const videoRef = useRef<HTMLVideoElement>(null);
 
   useEffect(() => {
@@ -26,7 +41,7 @@ export default function ScrollVideoBackground({ introRef }: Props) {
     if (!video) return;
 
     const portrait = window.matchMedia("(orientation: portrait)").matches;
-    const source = portrait ? SOURCES.portrait : SOURCES.landscape;
+    const source = portrait ? sources.portrait : sources.landscape;
     video.poster = source.poster;
 
     // Mouvement réduit demandé : on garde l'image fixe, sans vidéo.
@@ -46,10 +61,10 @@ export default function ScrollVideoBackground({ introRef }: Props) {
       const introLength = intro ? Math.max(intro.offsetHeight - window.innerHeight, 1) : maxScroll;
       let progress: number;
       if (scrollY <= introLength) {
-        progress = (scrollY / introLength) * INTRO_SHARE;
+        progress = (scrollY / introLength) * introShare;
       } else {
         const rest = Math.max(maxScroll - introLength, 1);
-        progress = INTRO_SHARE + ((scrollY - introLength) / rest) * (1 - INTRO_SHARE);
+        progress = introShare + ((scrollY - introLength) / rest) * (1 - introShare);
       }
       target = Math.min(Math.max(progress, 0), 1);
     };
@@ -85,7 +100,7 @@ export default function ScrollVideoBackground({ introRef }: Props) {
       window.removeEventListener("scroll", computeTarget);
       window.removeEventListener("resize", computeTarget);
     };
-  }, [introRef]);
+  }, [introRef, sources, introShare]);
 
   return (
     <div aria-hidden className="fixed inset-0 z-0 overflow-hidden bg-black">
@@ -98,7 +113,7 @@ export default function ScrollVideoBackground({ introRef }: Props) {
         className="h-full w-full object-cover"
       />
       {/* Assombrit les bords pour garder le texte lisible */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/20 to-black/70" />
+      <div className={`absolute inset-0 ${overlayClassName}`} />
     </div>
   );
 }

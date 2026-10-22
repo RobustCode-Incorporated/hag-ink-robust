@@ -10,6 +10,7 @@ import { Black_Ops_One } from "next/font/google";
 import { FormEvent, useRef, useState } from "react";
 import SlideOver from "@/components/SlideOver";
 import ScrollVideoBackground from "@/components/client/ScrollVideoBackground";
+import LogoReveal from "@/components/client/LogoReveal";
 
 const blackOpsOne = Black_Ops_One({ weight: '400', subsets: ['latin'] });
 
@@ -147,11 +148,15 @@ export default function ClientPage() {
 
       {/* --- INTRO CINÉMATIQUE : le scroll fait avancer la vidéo --- */}
       <section ref={introRef} className="relative w-full">
+      {/* La vidéo apparaît d'abord à travers les lettres HAG&INK */}
+      <LogoReveal />
+
       <div className="relative h-screen w-full flex items-center justify-center">
         <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-5xl mx-auto mt-20">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.6 }}
             className="flex items-center gap-2 px-4 py-1.5 rounded-full border border-neutral-700/50 bg-black/50 backdrop-blur-md mb-8"
           >
@@ -161,7 +166,8 @@ export default function ClientPage() {
 
           <motion.div
             initial={{ opacity: 0, y: 30 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.8, delay: 0.2 }}
           >
             <h1 className={`${blackOpsOne.className} text-6xl md:text-8xl tracking-widest text-white mb-4 drop-shadow-2xl`}>
@@ -174,7 +180,8 @@ export default function ClientPage() {
 
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
+            whileInView={{ opacity: 1, y: 0 }}
+            viewport={{ once: true, amount: 0.5 }}
             transition={{ duration: 0.8, delay: 0.4 }}
             className="flex flex-col sm:flex-row gap-4 w-full sm:w-auto"
           >
@@ -186,20 +193,6 @@ export default function ClientPage() {
               <Scissors className="w-5 h-5" />
               Voir les Memberships
             </button>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            transition={{ delay: 1.4, duration: 1 }}
-            className="mt-16 flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.4em] text-neutral-400"
-          >
-            Scroll
-            <motion.span
-              animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.3, 1, 0.3] }}
-              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
-              className="block h-10 w-px origin-top bg-neutral-300"
-            />
           </motion.div>
         </div>
       </div>
