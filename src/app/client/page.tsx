@@ -6,17 +6,18 @@ import {
   Trophy, Medal, Award, Camera, 
   ShoppingBag, Ticket, Sparkles, Coffee, Gift
 } from "lucide-react";
-import Image from "next/image";
 import { Black_Ops_One } from "next/font/google";
-import { FormEvent, useState } from "react";
+import { FormEvent, useRef, useState } from "react";
 import SlideOver from "@/components/SlideOver";
+import ScrollVideoBackground from "@/components/client/ScrollVideoBackground";
 
 const blackOpsOne = Black_Ops_One({ weight: '400', subsets: ['latin'] });
 
 export default function ClientPage() {
   const [selectedPlan, setSelectedPlan] = useState<{ code: string; name: string; price: number } | null>(null);
   const [isBookingOpen, setIsBookingOpen] = useState(false);
-  
+  const introRef = useRef<HTMLElement>(null);
+
   // Ajout de "paymentType" pour correspondre aux spécifications FlexPay (1 = Mobile Money, 2 = Carte Bancaire)
   const [form, setForm] = useState({ firstName: '', lastName: '', phone: '', email: '', paymentType: '1' });
   const [bookingForm, setBookingForm] = useState({
@@ -137,21 +138,16 @@ export default function ClientPage() {
   ];
 
   return (
-    <main className="min-h-screen bg-[#050505] text-neutral-200 font-sans selection:bg-neutral-800 selection:text-white">
-      
-      {/* --- HERO SECTION --- */}
-      <section className="relative h-screen w-full flex items-center justify-center overflow-hidden">
-        <div className="absolute inset-0 z-0">
-          <Image 
-            src="/interior.jpg" 
-            alt="Hag & Ink Interior" 
-            fill 
-            className="object-cover object-center opacity-40 grayscale-[50%]"
-            priority
-          />
-          <div className="absolute inset-0 bg-gradient-to-b from-black/80 via-black/40 to-[#050505]"></div>
-        </div>
+    <main className="relative min-h-screen bg-[#050505] text-neutral-200 font-sans selection:bg-neutral-800 selection:text-white">
 
+      {/* Vidéo du salon en arrière-plan, qui avance avec le scroll */}
+      <ScrollVideoBackground introRef={introRef} />
+
+      <div className="relative z-10">
+
+      {/* --- INTRO CINÉMATIQUE : le scroll fait avancer la vidéo --- */}
+      <section ref={introRef} className="relative w-full">
+      <div className="relative h-screen w-full flex items-center justify-center">
         <div className="relative z-10 flex flex-col items-center text-center px-4 max-w-5xl mx-auto mt-20">
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
@@ -191,22 +187,52 @@ export default function ClientPage() {
               Voir les Memberships
             </button>
           </motion.div>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 1.4, duration: 1 }}
+            className="mt-16 flex flex-col items-center gap-2 text-[10px] uppercase tracking-[0.4em] text-neutral-400"
+          >
+            Scroll
+            <motion.span
+              animate={{ scaleY: [0.3, 1, 0.3], opacity: [0.3, 1, 0.3] }}
+              transition={{ duration: 2, repeat: Infinity, ease: "easeInOut" }}
+              className="block h-10 w-px origin-top bg-neutral-300"
+            />
+          </motion.div>
         </div>
+      </div>
+
+        {[
+          { kicker: "01 — L'espace", title: "Lumière & caractère", text: "Un salon pensé comme un studio : lignes noires, lumière architecturale, chaque angle a son style." },
+          { kicker: "02 — L'équipe", title: "Des mains d'artistes", text: "Dégradés, locks, couleurs : nos barbers travaillent chaque coupe comme une pièce unique." },
+          { kicker: "03 — Le fauteuil", title: "Ta place t'attend", text: "Des barbers qui maîtrisent le détail, du dégradé à la barbe sculptée.", cta: true },
+        ].map((chapter, index) => (
+          <div key={chapter.title} className={`flex h-screen items-center px-6 ${index % 2 === 0 ? "justify-start md:pl-[8vw]" : "justify-end md:pr-[8vw]"}`}>
+            <motion.div
+              initial={{ opacity: 0, y: 40, filter: "blur(8px)" }}
+              whileInView={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              viewport={{ amount: 0.6 }}
+              transition={{ duration: 0.9, ease: "easeOut" }}
+              className="max-w-md"
+            >
+              <span className="mb-4 block text-xs font-bold uppercase tracking-[0.35em] text-neutral-400">{chapter.kicker}</span>
+              <h2 className={`${blackOpsOne.className} mb-5 text-4xl uppercase tracking-wider text-white drop-shadow-2xl md:text-6xl`}>{chapter.title}</h2>
+              <p className="text-lg font-light text-neutral-300 drop-shadow-lg">{chapter.text}</p>
+              {chapter.cta && (
+                <button type="button" onClick={() => setIsBookingOpen(true)} className="mt-8 flex items-center gap-2 bg-white px-8 py-4 font-bold uppercase tracking-wider text-black transition-all hover:bg-neutral-200">
+                  <Calendar className="h-5 w-5" />
+                  Réserver un créneau
+                </button>
+              )}
+            </motion.div>
+          </div>
+        ))}
       </section>
 
       {/* --- SECTION MEMBERSHIPS --- */}
-      <section id="memberships" className="py-24 px-4 relative border-t border-neutral-900 overflow-hidden">
-        
-        <div className="absolute inset-0 z-0">
-          <Image 
-            src="/tools.jpg" 
-            alt="Hag & Ink Tools" 
-            fill 
-            className="object-cover object-center opacity-50 grayscale-[50%] contrast-[1.2]" 
-            priority
-          />
-          <div className="absolute inset-0 bg-black/60"></div> 
-        </div>
+      <section id="memberships" className="py-24 px-4 relative overflow-hidden">
 
         <div className="max-w-7xl mx-auto relative z-10">
           
@@ -284,7 +310,7 @@ export default function ClientPage() {
       </section>
 
       {/* --- SECTION LOTERIE VIP --- */}
-      <section className="py-32 px-4 bg-[#020202] border-t border-neutral-900 relative">
+      <section className="py-32 px-4 bg-black/75 backdrop-blur-sm border-t border-neutral-900 relative">
         <div className="max-w-7xl mx-auto relative z-10">
           <div className="text-center mb-20">
             <motion.div
@@ -531,6 +557,7 @@ export default function ClientPage() {
         </div>
       </footer>
 
+      </div>
     </main>
   );
 }
