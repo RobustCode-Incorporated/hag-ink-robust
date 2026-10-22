@@ -543,9 +543,9 @@ export default function ClientPage() {
           <div className="space-y-3">
             <h3 className="text-xs font-bold uppercase tracking-[0.28em] text-neutral-500">À propos</h3>
             <p className="text-sm leading-relaxed text-neutral-300">
-              Site développé par <a href="https://www.robust-code.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-white transition hover:text-neutral-200">ROBUST CODE S.A.R.L</a>
+              Site développé par <a href="https://www.robust-code.com" target="_blank" rel="noopener noreferrer" className="font-semibold text-white transition hover:text-neutral-200">Robust Code S.ar.l</a>
             </p>
-            <p className="text-xs text-neutral-500">© Tous droits réservés — ROBUST CODE S.A.R.L</p>
+            <p className="text-xs text-neutral-500">© Tous droits réservés — Robust Code S.ar.l</p>
           </div>
         </div>
       </footer>
