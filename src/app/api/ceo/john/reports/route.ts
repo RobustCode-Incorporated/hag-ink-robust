@@ -27,7 +27,8 @@ export async function POST(request: NextRequest) {
   const busy = await prisma.johnReport.findFirst({ where: { kind: 'MONTHLY', periodKey, status: { in: ['QUEUED', 'RUNNING'] } } });
   if (busy) return NextResponse.json({ report: busy, reused: true });
 
-  const facts = await loadMonthlyFacts(periodKey);
+  const language = body.language === 'en' ? 'en' : 'fr';
+  const facts = await loadMonthlyFacts(periodKey, language);
   const report = await prisma.johnReport.create({
     data: { kind: 'MONTHLY', periodKey, facts, requestedBy: email },
     select: { id: true, kind: true, periodKey: true, status: true, createdAt: true },

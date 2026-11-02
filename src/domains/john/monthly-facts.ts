@@ -3,20 +3,23 @@ import { calculatePayroll, type StaffMember } from '../payroll/payroll';
 // JOHN monthly facts (contract john.facts/v1, see robust-john/docs/CONTRACT.md).
 // Every number JOHN says comes from here. Keep this pure and tested.
 
+export type Language = 'fr' | 'en';
 export type Unit = 'money' | 'count' | 'percent';
 export type Metric = { id: string; label: string; unit: Unit; value: number; previous?: number; changePct?: number; note?: string };
 export type JohnFacts = {
   contract: 'john.facts/v1';
   kind: 'monthly';
+  language: Language;
   generatedAt: string;
   business: { name: string; sector: string; currency: string; locale: string };
   period: { key: string; label: string; previousLabel: string };
   headline: Metric[];
-  trend: { label: string; unit: Unit; points: { label: string; value: number }[] };
-  breakdown: { label: string; unit: Unit; rows: { label: string; value: number; note?: string }[] };
+  trend: { id: string; label: string; unit: Unit; points: { label: string; value: number }[] };
+  breakdown: { id: string; label: string; unit: Unit; rows: { label: string; value: number; count?: number; note?: string }[] };
   result: Metric;
-  alerts: { level: 'high' | 'medium' | 'info'; text: string }[];
-  actions: { priority: number; title: string; reason: string; amount?: number }[];
+  // code + params let JOHN word alerts and actions in any language; text/title/reason are the French fallback.
+  alerts: { code: string; params: Record<string, string | number | string[]>; level: 'high' | 'medium' | 'info'; text: string }[];
+  actions: { code: string; params: Record<string, string | number | string[]>; priority: number; title: string; reason: string; amount?: number }[];
 };
 
 export type BarberRow = { id: string; firstName: string; lastName: string; salaryType: string; fixedSalary: number; commissionRate: number };
@@ -56,6 +59,7 @@ export function buildMonthlyFacts(input: {
   barbers: BarberRow[];
   services: ServiceRow[];
   expenses: ExpenseRow[];
+  language?: Language;
   now?: Date;
 }): JohnFacts {
   const { periodKey, barbers } = input;
@@ -109,10 +113,14 @@ export function buildMonthlyFacts(input: {
   if (pendingAll.length > 0) {
     const oldest = pendingAll.reduce((a, b) => (a.createdAt < b.createdAt ? a : b));
     alerts.push({
+      code: 'expenses_pending',
+      params: { count: pendingAll.length, total: pendingAllTotal, oldest: oldest.createdAt.toISOString().slice(0, 10) },
       level: 'high',
       text: `${pendingAll.length} dépenses attendent une validation, pour ${money(pendingAllTotal)}. La plus ancienne date du ${dayLabel(oldest.createdAt)}.`,
     });
     actions.push({
+      code: 'validate_expenses',
+      params: { count: pendingAll.length, total: pendingAllTotal },
       priority: 0,
       title: 'Valider ou rejeter les dépenses en attente',
       reason: `Tant qu'elles ne sont pas validées, le solde du mois ne tient pas compte de ${money(pendingAllTotal)} de dépenses.`,
@@ -120,18 +128,20 @@ export function buildMonthlyFacts(input: {
     });
   }
   if (ch !== undefined && ch <= -5) {
-    alerts.push({ level: 'medium', text: `Le chiffre d'affaires recule de ${String(Math.abs(ch)).replace('.', ',')} pour cent par rapport à ${prevLabel}.` });
+    alerts.push({ code: 'revenue_change', params: { pct: ch, previous: prevKey }, level: 'medium', text: `Le chiffre d'affaires recule de ${String(Math.abs(ch)).replace('.', ',')} pour cent par rapport à ${prevLabel}.` });
   } else if (ch !== undefined && ch >= 5) {
-    alerts.push({ level: 'info', text: `Le chiffre d'affaires progresse de ${String(ch).replace('.', ',')} pour cent par rapport à ${prevLabel}.` });
+    alerts.push({ code: 'revenue_change', params: { pct: ch, previous: prevKey }, level: 'info', text: `Le chiffre d'affaires progresse de ${String(ch).replace('.', ',')} pour cent par rapport à ${prevLabel}.` });
   }
   if (rows.length >= 2 && cur.length > 0) {
     const avgCount = cur.length / rows.length;
     const low = rows.filter((r) => r.count < avgCount * 0.6);
     for (const r of low.slice(0, 2)) {
-      alerts.push({ level: 'medium', text: `${r.label} n'a enregistré que ${r.count} prestations ce mois-ci.` });
+      alerts.push({ code: 'low_activity', params: { name: r.label, count: r.count }, level: 'medium', text: `${r.label} n'a enregistré que ${r.count} prestations ce mois-ci.` });
     }
     if (low.length) {
       actions.push({
+        code: 'check_staff_activity',
+        params: { names: low.map((r) => r.label) },
         priority: 0,
         title: `Vérifier les prestations de ${low.map((r) => r.label).join(' et ')}`,
         reason: 'Leur nombre de prestations est très inférieur à celui de l’équipe : saisie oubliée ou absence ?',
@@ -140,6 +150,8 @@ export function buildMonthlyFacts(input: {
   }
   if (payroll.totalCommissions > 0) {
     actions.push({
+      code: 'pay_commissions',
+      params: { period: periodKey, total: round2(payroll.totalCommissions) },
       priority: 0,
       title: `Préparer le versement des commissions ${deLabel(label)}`,
       reason: `${money(round2(payroll.totalCommissions))} à répartir entre les barbiers, selon leur taux.`,
@@ -148,13 +160,14 @@ export function buildMonthlyFacts(input: {
   }
   if (monthExpenses.length > 0) {
     const top = monthExpenses.reduce((a, b) => (a.amount >= b.amount ? a : b));
-    alerts.push({ level: 'info', text: `La plus grosse dépense du mois est « ${top.description} », pour ${money(top.amount)}.` });
+    alerts.push({ code: 'top_expense', params: { description: top.description, amount: top.amount }, level: 'info', text: `La plus grosse dépense du mois est « ${top.description} », pour ${money(top.amount)}.` });
   }
   actions.forEach((a, i) => (a.priority = i + 1));
 
   return {
     contract: 'john.facts/v1',
     kind: 'monthly',
+    language: input.language ?? 'fr',
     generatedAt: (input.now ?? new Date()).toISOString(),
     business: input.business,
     period: { key: periodKey, label, previousLabel: prevLabel },
@@ -164,11 +177,12 @@ export function buildMonthlyFacts(input: {
       { id: 'avg_ticket', label: 'Panier moyen', unit: 'money', value: avg, previous: prevAvg, changePct: changePct(avg, prevAvg) },
       { id: 'payroll', label: 'Commissions et salaires', unit: 'money', value: payrollTotal },
     ],
-    trend: { label: "Chiffre d'affaires, 6 derniers mois", unit: 'money', points: trend },
+    trend: { id: 'revenue_6m', label: "Chiffre d'affaires, 6 derniers mois", unit: 'money', points: trend },
     breakdown: {
+      id: 'revenue_by_staff',
       label: "Chiffre d'affaires par barbier",
       unit: 'money',
-      rows: rows.slice(0, 8).map((r) => ({ label: r.label, value: r.value, note: `${r.count} prestations` })),
+      rows: rows.slice(0, 8).map((r) => ({ label: r.label, value: r.value, count: r.count, note: `${r.count} prestations` })),
     },
     result: {
       id: 'balance',

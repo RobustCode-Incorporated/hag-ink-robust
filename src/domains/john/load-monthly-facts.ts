@@ -1,5 +1,5 @@
 import prisma from '@/lib/prisma';
-import { buildMonthlyFacts, monthKeyShift, type JohnFacts } from './monthly-facts';
+import { buildMonthlyFacts, monthKeyShift, type JohnFacts, type Language } from './monthly-facts';
 
 export const HAG_INK_BUSINESS: JohnFacts['business'] = { name: 'Hag & Ink', sector: 'salon', currency: 'USD', locale: 'fr-CD' };
 
@@ -8,7 +8,7 @@ function monthStart(key: string): Date {
   return new Date(Date.UTC(y, m - 1, 1));
 }
 
-export async function loadMonthlyFacts(periodKey: string): Promise<JohnFacts> {
+export async function loadMonthlyFacts(periodKey: string, language: Language = 'fr'): Promise<JohnFacts> {
   const from = monthStart(monthKeyShift(periodKey, -5));
   const to = monthStart(monthKeyShift(periodKey, 1));
   const [barbers, services, expenses] = await Promise.all([
@@ -18,6 +18,7 @@ export async function loadMonthlyFacts(periodKey: string): Promise<JohnFacts> {
   ]);
   return buildMonthlyFacts({
     periodKey,
+    language,
     business: HAG_INK_BUSINESS,
     barbers,
     services: services.map((s) => ({ ...s, amount: Number(s.amount) })),

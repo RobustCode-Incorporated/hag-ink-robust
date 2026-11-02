@@ -64,3 +64,17 @@ describe('deLabel', () => {
     expect(deLabel('mai 2026')).toBe('de mai 2026');
   });
 });
+
+describe('language-neutral codes', () => {
+  it('gives every alert and action a code and params', () => {
+    const f = buildMonthlyFacts({
+      periodKey: '2026-10', business, barbers, language: 'en',
+      services: [{ barberId: 'a', amount: 100, createdAt: d('2026-10-05') }],
+      expenses: [{ amount: 20, description: 'Wifi', isValidated: false, createdAt: d('2026-10-06') }],
+    });
+    expect(f.language).toBe('en');
+    expect(f.alerts.map((a) => a.code)).toContain('expenses_pending');
+    expect(f.actions[0]).toMatchObject({ code: 'validate_expenses', params: { count: 1, total: 20 } });
+    expect(f.actions.find((a) => a.code === 'pay_commissions')?.params).toEqual({ period: '2026-10', total: 30 });
+  });
+});

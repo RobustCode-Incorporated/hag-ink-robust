@@ -33,6 +33,7 @@ export function JohnPanel({ initialReports, months, defaultMonth, focusId }: {
 }) {
   const [reports, setReports] = useState(initialReports);
   const [month, setMonth] = useState(defaultMonth);
+  const [language, setLanguage] = useState<'fr' | 'en'>('fr');
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [playing, setPlaying] = useState<string | null>(
@@ -58,7 +59,7 @@ export function JohnPanel({ initialReports, months, defaultMonth, focusId }: {
       const res = await fetch('/api/ceo/john/reports', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ period: month }),
+        body: JSON.stringify({ period: month, language }),
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error ?? 'Erreur');
@@ -84,6 +85,13 @@ export function JohnPanel({ initialReports, months, defaultMonth, focusId }: {
               {months.map((m) => (
                 <option key={m} value={m}>{monthLabel(m)}</option>
               ))}
+            </select>
+          </label>
+          <label className="flex items-center gap-2 rounded-full border border-slate-200 bg-white px-3 py-2 text-sm text-slate-600">
+            <span className="font-medium">Langue</span>
+            <select value={language} onChange={(e) => setLanguage(e.target.value as 'fr' | 'en')} className="bg-transparent pr-2 outline-none">
+              <option value="fr">Français</option>
+              <option value="en">English</option>
             </select>
           </label>
           <button
