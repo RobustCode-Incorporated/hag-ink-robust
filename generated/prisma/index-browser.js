@@ -233,9 +233,35 @@ exports.Prisma.PaymentScalarFieldEnum = {
   planId: 'planId'
 };
 
+exports.Prisma.JohnReportScalarFieldEnum = {
+  id: 'id',
+  kind: 'kind',
+  periodKey: 'periodKey',
+  status: 'status',
+  facts: 'facts',
+  script: 'script',
+  blobPath: 'blobPath',
+  durationSec: 'durationSec',
+  error: 'error',
+  attempts: 'attempts',
+  requestedBy: 'requestedBy',
+  createdAt: 'createdAt',
+  startedAt: 'startedAt',
+  finishedAt: 'finishedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
+};
+
+exports.Prisma.JsonNullValueInput = {
+  JsonNull: Prisma.JsonNull
+};
+
+exports.Prisma.NullableJsonNullValueInput = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull
 };
 
 exports.Prisma.QueryMode = {
@@ -246,6 +272,12 @@ exports.Prisma.QueryMode = {
 exports.Prisma.NullsOrder = {
   first: 'first',
   last: 'last'
+};
+
+exports.Prisma.JsonNullValueFilter = {
+  DbNull: Prisma.DbNull,
+  JsonNull: Prisma.JsonNull,
+  AnyNull: Prisma.AnyNull
 };
 exports.Role = exports.$Enums.Role = {
   CEO: 'CEO',
@@ -268,6 +300,18 @@ exports.PaymentStatus = exports.$Enums.PaymentStatus = {
   FAILED: 'FAILED'
 };
 
+exports.JohnReportKind = exports.$Enums.JohnReportKind = {
+  MONTHLY: 'MONTHLY',
+  DAILY: 'DAILY'
+};
+
+exports.JohnReportStatus = exports.$Enums.JohnReportStatus = {
+  QUEUED: 'QUEUED',
+  RUNNING: 'RUNNING',
+  DONE: 'DONE',
+  FAILED: 'FAILED'
+};
+
 exports.Prisma.ModelName = {
   User: 'User',
   Barber: 'Barber',
@@ -280,7 +324,8 @@ exports.Prisma.ModelName = {
   Invoice: 'Invoice',
   Expense: 'Expense',
   LotteryTicket: 'LotteryTicket',
-  Payment: 'Payment'
+  Payment: 'Payment',
+  JohnReport: 'JohnReport'
 };
 
 /**

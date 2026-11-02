@@ -189,3 +189,35 @@ model Payment {
   planId             String
   plan               Plan          @relation(fields: [planId], references: [id], onDelete: Restrict)
 }
+
+// JOHN: AI treasurer video reports (spec 005).
+enum JohnReportKind {
+  MONTHLY
+  DAILY
+}
+
+enum JohnReportStatus {
+  QUEUED
+  RUNNING
+  DONE
+  FAILED
+}
+
+model JohnReport {
+  id          String           @id @default(uuid())
+  kind        JohnReportKind
+  periodKey   String
+  status      JohnReportStatus @default(QUEUED)
+  facts       Json
+  script      Json?
+  blobPath    String?
+  durationSec Float?
+  error       String?
+  attempts    Int              @default(0)
+  requestedBy String
+  createdAt   DateTime         @default(now())
+  startedAt   DateTime?
+  finishedAt  DateTime?
+
+  @@index([status, createdAt])
+}

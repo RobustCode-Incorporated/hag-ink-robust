@@ -13,7 +13,7 @@ const CEO_MENU: ManagementNavItem[] = [
   { id: 'lottery', label: 'Tombola', href: '/ceo/lottery' },
   { id: 'treasury', label: 'Tresorerie & Salaires', href: '/ceo/treasury' },
   { id: 'expenses', label: 'Depenses', href: '/ceo/depenses' },
-  { id: 'robust', label: 'ROBUST IA', href: '/ceo/robust' },
+  { id: 'robust', label: 'ROBUST SI', href: '/ceo/robust' },
 ];
 
 const MANAGER_MENU: ManagementNavItem[] = [
@@ -21,7 +21,7 @@ const MANAGER_MENU: ManagementNavItem[] = [
   { id: 'products', label: 'Produits', href: '/manager/products' },
   { id: 'barbers', label: 'Coiffeurs', href: '/manager/coiffeurs' },
   { id: 'expenses', label: 'Depenses', href: '/manager/depenses' },
-  { id: 'robust', label: 'ROBUST IA', href: '/manager/robust' },
+  { id: 'robust', label: 'ROBUST SI', href: '/manager/robust' },
 ];
 
 export function managementRoleFromPath(pathname: string | null | undefined): AuthRole | null {

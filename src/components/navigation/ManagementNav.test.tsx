@@ -28,7 +28,7 @@ describe('ManagementNav integration', () => {
       { label: 'Tombola', href: '/ceo/lottery' },
       { label: 'Tresorerie & Salaires', href: '/ceo/treasury' },
       { label: 'Depenses', href: '/ceo/depenses' },
-      { label: 'ROBUST IA', href: '/ceo/robust' },
+      { label: 'ROBUST SI', href: '/ceo/robust' },
     ];
 
     expectedLinks.forEach(({ label, href }) => {
@@ -46,7 +46,7 @@ describe('ManagementNav integration', () => {
       { label: 'Produits', href: '/manager/products' },
       { label: 'Coiffeurs', href: '/manager/coiffeurs' },
       { label: 'Depenses', href: '/manager/depenses' },
-      { label: 'ROBUST IA', href: '/manager/robust' },
+      { label: 'ROBUST SI', href: '/manager/robust' },
     ];
 
     expectedLinks.forEach(({ label, href }) => {
