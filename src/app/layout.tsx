@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { usePathname } from "next/navigation";
 import { managementRoleFromPath } from '@/lib/management-navigation';
 import ManagementNav from '@/components/navigation/ManagementNav';
+import { Analytics } from "@vercel/analytics/next";
 import "./globals.css";
 
 const geistSans = Geist({ variable: "--font-geist-sans", subsets: ["latin"] });
@@ -45,6 +46,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
 
         {/* Contenu principal */}
         <main className="flex-grow">{children}</main>
+        <Analytics />
       </body>
     </html>
   );
