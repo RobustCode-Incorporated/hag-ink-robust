@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import PasswordInput from '@/components/gestion/PasswordInput';
 import { Card, Field, Flash, PageHeader, Stat, input, btn } from '@/components/gestion/ui';
 import { requireRole } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
@@ -58,8 +59,8 @@ export default async function MoiPage({ searchParams }: { searchParams: Promise<
         </Card>
         <Card title="Changer mon mot de passe">
           <form action={changeOwnPasswordAction} className="space-y-3">
-            <Field label="Mot de passe actuel"><input type="password" name="current" required autoComplete="current-password" className={input} /></Field>
-            <Field label="Nouveau (10 caractères min.)"><input type="password" name="next" required minLength={10} autoComplete="new-password" className={input} /></Field>
+            <Field label="Mot de passe actuel"><PasswordInput name="current" required autoComplete="current-password" className={input} /></Field>
+            <Field label="Nouveau (10 caractères min.)"><PasswordInput name="next" required minLength={10} autoComplete="new-password" className={input} /></Field>
             <button className={`${btn} w-full`}>Modifier</button>
           </form>
         </Card>

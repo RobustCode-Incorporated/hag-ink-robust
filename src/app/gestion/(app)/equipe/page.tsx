@@ -1,4 +1,5 @@
 import { Card, Field, Flash, PageHeader, Table, Badge, input, btn, btnDanger } from '@/components/gestion/ui';
+import PasswordInput from '@/components/gestion/PasswordInput';
 import { requireRole, MANAGERS } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { euros } from '@/lib/format';
@@ -28,7 +29,7 @@ function StaffForm({ s }: { s?: Staff }) {
         <Field label={`Fixe ${SALON.currencySymbol}/mois`}><input name="fixedSalary" inputMode="decimal" defaultValue={s ? s.fixed_salary_cents / 100 : 0} className={input} /></Field>
       </div>
       <Field label="Email (connexion)"><input name="email" type="email" defaultValue={s?.email ?? ''} className={input} /></Field>
-      <Field label={s?.has_login ? 'Nouveau mot de passe' : 'Mot de passe'}><input name="password" type="password" minLength={10} placeholder={s?.has_login ? 'inchangé' : 'pas de connexion'} autoComplete="new-password" className={input} /></Field>
+      <Field label={s?.has_login ? 'Nouveau mot de passe' : 'Mot de passe'}><PasswordInput name="password" minLength={10} placeholder={s?.has_login ? 'inchangé' : 'pas de connexion'} autoComplete="new-password" className={input} /></Field>
       <Field label="Téléphone"><input name="phone" defaultValue={s?.phone ?? ''} className={input} /></Field>
       <div className="grid grid-cols-2 gap-2">
         <Field label="Instagram"><input name="instagram" defaultValue={s?.instagram ?? ''} className={input} /></Field>

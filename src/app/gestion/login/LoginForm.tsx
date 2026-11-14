@@ -1,5 +1,6 @@
 'use client';
 import { FormEvent, useState } from 'react';
+import PasswordInput from '@/components/gestion/PasswordInput';
 import { input, btn } from '@/components/gestion/ui';
 
 export default function LoginForm() {
@@ -29,7 +30,7 @@ export default function LoginForm() {
         <input type="email" required autoComplete="username" className={`${input} mt-1`} value={email} onChange={(e) => setEmail(e.target.value)} />
       </label>
       <label className="block text-sm">Mot de passe
-        <input type="password" required autoComplete="current-password" className={`${input} mt-1`} value={password} onChange={(e) => setPassword(e.target.value)} />
+        <span className="mt-1 block"><PasswordInput required autoComplete="current-password" className={input} value={password} onChange={(e) => setPassword(e.target.value)} /></span>
       </label>
       {error && <p role="alert" className="text-sm text-danger">{error}</p>}
       <button type="submit" disabled={loading} className={`${btn} w-full py-3`}>{loading ? 'Connexion…' : 'Se connecter'}</button>
