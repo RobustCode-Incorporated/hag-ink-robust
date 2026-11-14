@@ -167,5 +167,26 @@
     "sendError": "Link refused (https required).",
     "logout": "Log out",
     "privacy": "You only see your own numbers. The salon shares neither its clients' identity nor its costs."
+  },
+  "Packs": {
+    "title": "Exclusive packs",
+    "text": "Save on your cuts with a monthly pack, paid online with FlexPay.",
+    "choose": "Choose",
+    "checkoutTitle": "Pack payment",
+    "checkoutText": "Your details create your client profile. Payment is processed securely by FlexPay.",
+    "close": "Close",
+    "firstName": "First name",
+    "lastName": "Last name",
+    "phone": "Phone (with country code, e.g. +243…)",
+    "email": "E-mail (optional)",
+    "method": "Payment method",
+    "card": "Bank card (Visa / Mastercard)",
+    "pay": "Pay {amount} with FlexPay",
+    "processing": "Processing…",
+    "pushSent": "Confirm the payment on your phone (Mobile Money).",
+    "error": "Could not start the payment. Please try again.",
+    "return_success": "Payment received, thank you! Your pack is active once FlexPay confirms.",
+    "return_cancelled": "Payment cancelled.",
+    "return_failed": "Payment declined. You can try again."
   }
 }

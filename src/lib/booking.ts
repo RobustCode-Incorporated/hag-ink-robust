@@ -138,7 +138,7 @@ export type BookingInput = {
   referral?: { slug?: string | null; code?: string | null };
 };
 
-async function upsertClient(c: PoolClient, input: { firstName: string; lastName: string; phone: string; email?: string | null }) {
+export async function upsertClient(c: PoolClient, input: { firstName: string; lastName: string; phone: string; email?: string | null }) {
   const res = await c.query<{ id: string }>(
     `INSERT INTO clients (first_name, last_name, phone, email) VALUES ($1, $2, $3, $4)
      ON CONFLICT (phone) DO UPDATE SET

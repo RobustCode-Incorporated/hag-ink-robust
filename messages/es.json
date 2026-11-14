@@ -167,5 +167,26 @@
     "sendError": "Enlace rechazado (https obligatorio).",
     "logout": "Cerrar sesión",
     "privacy": "Solo ves tus propias cifras. El salón no comparte la identidad de sus clientes ni sus costes."
+  },
+  "Packs": {
+    "title": "Packs exclusivos",
+    "text": "Ahorra en tus cortes con un pack mensual, pagado en línea con FlexPay.",
+    "choose": "Elegir",
+    "checkoutTitle": "Pago del pack",
+    "checkoutText": "Tus datos crean tu perfil de cliente. El pago se procesa de forma segura con FlexPay.",
+    "close": "Cerrar",
+    "firstName": "Nombre",
+    "lastName": "Apellido",
+    "phone": "Teléfono (con prefijo, ej. +243…)",
+    "email": "E-mail (opcional)",
+    "method": "Medio de pago",
+    "card": "Tarjeta bancaria (Visa / Mastercard)",
+    "pay": "Pagar {amount} con FlexPay",
+    "processing": "Procesando…",
+    "pushSent": "Confirma el pago en tu teléfono (Mobile Money).",
+    "error": "No se pudo iniciar el pago. Inténtalo de nuevo.",
+    "return_success": "¡Pago recibido, gracias! Tu pack se activa cuando FlexPay lo confirme.",
+    "return_cancelled": "Pago cancelado.",
+    "return_failed": "Pago rechazado. Puedes intentarlo de nuevo."
   }
 }

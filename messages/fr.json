@@ -167,5 +167,26 @@
     "sendError": "Lien refusé (https obligatoire).",
     "logout": "Se déconnecter",
     "privacy": "Tu vois uniquement tes propres chiffres. Le salon ne partage ni l'identité de ses clients ni ses coûts."
+  },
+  "Packs": {
+    "title": "Packs exclusifs",
+    "text": "Économise sur tes coupes avec un pack mensuel, payé en ligne via FlexPay.",
+    "choose": "Choisir",
+    "checkoutTitle": "Paiement du pack",
+    "checkoutText": "Tes informations créent ton profil client. Le paiement est traité de manière sécurisée par FlexPay.",
+    "close": "Fermer",
+    "firstName": "Prénom",
+    "lastName": "Nom",
+    "phone": "Téléphone (avec indicatif, ex. +243…)",
+    "email": "E-mail (facultatif)",
+    "method": "Moyen de paiement",
+    "card": "Carte bancaire (Visa / Mastercard)",
+    "pay": "Payer {amount} avec FlexPay",
+    "processing": "Traitement…",
+    "pushSent": "Valide le paiement sur ton téléphone (Mobile Money).",
+    "error": "Impossible de démarrer le paiement. Réessaie.",
+    "return_success": "Paiement reçu, merci ! Ton pack est actif dès confirmation de FlexPay.",
+    "return_cancelled": "Paiement annulé.",
+    "return_failed": "Paiement refusé. Tu peux réessayer."
   }
 }

@@ -1,4 +1,6 @@
 import { Badge, Card, Field, Flash, PageHeader, Stat, Table, btn, btnGhost, input } from '@/components/gestion/ui';
+import { notFound } from 'next/navigation';
+import { SALON } from '@/config/salon';
 import { requireRole } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { addDays, salonDate } from '@/lib/timezone';
@@ -8,6 +10,7 @@ export const metadata = { title: 'Tombola' };
 
 // Owner only, never on the public site (spec 009).
 export default async function TombolaPage({ searchParams }: { searchParams: Promise<{ msg?: string; error?: string }> }) {
+  if (!SALON.features.tombola) notFound(); // module switched off (SALON.features)
   await requireRole('OWNER');
   const sp = await searchParams;
   const rows = await query<{ ticket_num: string; draw_date: Date; is_winner: boolean; client: string; phone: string }>(

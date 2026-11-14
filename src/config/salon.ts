@@ -34,6 +34,13 @@ export const SALON = {
   phoneCountryCode: '243',
   /** Migration in progress (spec 006): keep search engines out until cut-over. */
   noIndex: true,
+  /**
+   * Modules kept in the code but switched off (owner decision 2026-11-14). Turn one on to show it again:
+   * - memberships: "Packs" section on the public site + FlexPay checkout + /gestion/abonnements (spec 012).
+   *   The FlexPay webhook always stays active so a payment already started is never lost.
+   * - tombola: /gestion/tombola (spec 009) and tickets given with a paid pack.
+   */
+  features: { memberships: false, tombola: false },
   /** Booking rules */
   booking: {
     slotStepMin: 15,

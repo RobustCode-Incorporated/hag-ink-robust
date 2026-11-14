@@ -39,8 +39,8 @@ async function main() {
     await src.query('BEGIN TRANSACTION READ ONLY');
     const barbers = (await src.query<OldBarber>(`SELECT id, "firstName", "lastName", "salaryType", "fixedSalary", "commissionRate", phone FROM "Barber"`)).rows;
     const users = (await src.query<{ id: string; email: string; role: string; password: string }>(`SELECT id, email, role::text, password FROM "User" WHERE role IN ('CEO','MANAGER')`)).rows;
-    const clients = (await src.query<{ id: string; firstName: string; lastName: string; phone: string; email: string | null; createdAt: Date }>(
-      `SELECT id, "firstName", "lastName", phone, email, "createdAt" FROM "Client"`)).rows;
+    const clients = (await src.query<{ id: string; firstName: string; lastName: string; phone: string; email: string | null; createdAt: Date; planId: string | null; planEndsAt: Date | null }>(
+      `SELECT id, "firstName", "lastName", phone, email, "createdAt", "planId", "planEndsAt" FROM "Client"`)).rows;
     const services = (await src.query<OldService>(`SELECT id, "barberId", "clientId", amount, "createdAt" FROM "Service" ORDER BY "createdAt"`)).rows;
     const expenses = (await src.query<OldExpense>(`SELECT id, amount, description, "isValidated", "createdAt", "userId" FROM "Expense"`)).rows;
     const archive: { kind: string; rows: { id: string }[] }[] = [];
@@ -122,6 +122,28 @@ async function main() {
          VALUES ($1, 'AUTRE', $2, $3, $4, $5, $6, $7) ON CONFLICT (legacy_id) DO NOTHING`,
         [e.id, e.description, toCents(Number(e.amount)), salonDay(e.createdAt, SALON.timezone),
          e.isValidated ? 'APPROVED' : 'PENDING', e.userId ? userStaff.get(e.userId) ?? null : null, e.createdAt]);
+    }
+
+    // FlexPay pack payments (spec 012): kept in membership_payments so a late webhook still finds its order.
+    const plansById = new Map((archive.find((a) => a.kind === 'plan')?.rows ?? []).map((r) => [r.id, (r as unknown as { name: string }).name]));
+    for (const row of archive.find((a) => a.kind === 'payment')?.rows ?? []) {
+      const pay = row as unknown as { id: string; flexpayOrderNumber: string; providerReference: string | null; amount: number; currency: string; status: string; createdAt: Date; clientId: string; planId: string };
+      const cid = clientId.get(pay.clientId);
+      if (!cid) throw new Error(`Payment ${pay.id}: unknown client`);
+      await dst.query(
+        `INSERT INTO membership_payments (legacy_id, order_number, provider_reference, plan_code, amount_cents, currency, status, client_id, created_at, paid_at)
+         VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10) ON CONFLICT (legacy_id) DO NOTHING`,
+        [pay.id, pay.flexpayOrderNumber, pay.providerReference, plansById.get(pay.planId) ?? pay.planId, toCents(Number(pay.amount)),
+         pay.currency, pay.status, cid, new Date(pay.createdAt), pay.status === 'PAID' ? new Date(pay.createdAt) : null]);
+    }
+    // Running memberships (old Client.planId / planEndsAt).
+    for (const c of clients.filter((c) => c.planId && c.planEndsAt && new Date(c.planEndsAt) > new Date())) {
+      const cid = clientId.get(c.id)!;
+      const end = new Date(c.planEndsAt!);
+      const start = new Date(end.getTime()); start.setUTCMonth(start.getUTCMonth() - 1);
+      await dst.query(
+        `INSERT INTO client_memberships (legacy_id, client_id, plan_code, starts_at, ends_at) VALUES ($1, $2, $3, $4, $5) ON CONFLICT (legacy_id) DO NOTHING`,
+        [c.id, cid, plansById.get(c.planId!) ?? c.planId, start, end]);
     }
 
     // archive

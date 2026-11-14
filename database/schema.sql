@@ -391,3 +391,35 @@ CREATE TABLE IF NOT EXISTS ambassador_sessions (
   expires_at     timestamptz NOT NULL,
   created_at     timestamptz NOT NULL DEFAULT now()
 );
+
+-- 8. Packs (abonnements) payés en ligne via FlexPay — spec 012. Désactivé sur le site (SALON.features.memberships).
+DO $$ BEGIN
+  CREATE TYPE membership_payment_status AS ENUM ('PENDING', 'PAID', 'FAILED');
+EXCEPTION WHEN duplicate_object THEN NULL; END $$;
+CREATE TABLE IF NOT EXISTS membership_payments (
+  id                  uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  order_number        text NOT NULL UNIQUE,           -- FlexPay orderNumber (webhook correlation key)
+  reference           text UNIQUE,                    -- our reference sent to FlexPay
+  provider_reference  text,
+  plan_code           text NOT NULL,
+  amount_cents        integer NOT NULL CHECK (amount_cents > 0),
+  currency            text NOT NULL,
+  method              text CHECK (method IN ('MOBILE_MONEY', 'CARD')),
+  status              membership_payment_status NOT NULL DEFAULT 'PENDING',
+  client_id           uuid NOT NULL REFERENCES clients(id) ON DELETE RESTRICT,
+  legacy_id           text UNIQUE,
+  created_at          timestamptz NOT NULL DEFAULT now(),
+  paid_at             timestamptz
+);
+CREATE INDEX IF NOT EXISTS membership_payments_created_idx ON membership_payments (created_at DESC);
+CREATE TABLE IF NOT EXISTS client_memberships (
+  id          uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  client_id   uuid NOT NULL REFERENCES clients(id) ON DELETE RESTRICT,
+  plan_code   text NOT NULL,
+  starts_at   timestamptz NOT NULL,
+  ends_at     timestamptz NOT NULL CHECK (ends_at > starts_at),
+  payment_id  uuid UNIQUE REFERENCES membership_payments(id),
+  legacy_id   text UNIQUE,
+  created_at  timestamptz NOT NULL DEFAULT now()
+);
+CREATE INDEX IF NOT EXISTS client_memberships_client_idx ON client_memberships (client_id, ends_at DESC);

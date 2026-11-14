@@ -24,9 +24,4 @@ export const RELEASE_NOTES: ReleaseNote[] = [
     fr: "Le programme ambassadeurs est prêt : chaque créateur reçoit un lien personnel et un code promo, la remise est appliquée à la caisse, et ses prestations offertes et ses contenus sont suivis dans son propre portail.",
     en: "The ambassador program is ready: each creator gets a personal link and a promo code, the discount is applied at the till, and free services and content are tracked in their own portal.",
   },
-  {
-    date: '2026-11-02',
-    fr: "La tombola est conservée, visible uniquement par la direction.",
-    en: "The tombola is kept, visible to management only.",
-  },
 ];

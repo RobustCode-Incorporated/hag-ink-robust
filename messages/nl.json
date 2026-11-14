@@ -167,5 +167,26 @@
     "sendError": "Link geweigerd (https verplicht).",
     "logout": "Afmelden",
     "privacy": "Je ziet alleen je eigen cijfers. Het salon deelt geen klantidentiteit of kosten."
+  },
+  "Packs": {
+    "title": "Exclusieve packs",
+    "text": "Bespaar op je knipbeurten met een maandpack, online betaald via FlexPay.",
+    "choose": "Kiezen",
+    "checkoutTitle": "Betaling van het pack",
+    "checkoutText": "Je gegevens maken je klantprofiel aan. De betaling wordt veilig verwerkt door FlexPay.",
+    "close": "Sluiten",
+    "firstName": "Voornaam",
+    "lastName": "Achternaam",
+    "phone": "Telefoon (met landcode, bv. +243…)",
+    "email": "E-mail (optioneel)",
+    "method": "Betaalmethode",
+    "card": "Bankkaart (Visa / Mastercard)",
+    "pay": "Betaal {amount} met FlexPay",
+    "processing": "Bezig…",
+    "pushSent": "Bevestig de betaling op je telefoon (Mobile Money).",
+    "error": "Betaling kon niet starten. Probeer opnieuw.",
+    "return_success": "Betaling ontvangen, bedankt! Je pack is actief zodra FlexPay bevestigt.",
+    "return_cancelled": "Betaling geannuleerd.",
+    "return_failed": "Betaling geweigerd. Je kunt het opnieuw proberen."
   }
 }

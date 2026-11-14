@@ -1,6 +1,7 @@
+import { SALON } from '@/config/salon';
 import type { Role } from '@/lib/session';
 
-export type NavItem = { href: string; label: string; roles: Role[] };
+export type NavItem = { href: string; label: string; roles: Role[]; feature?: keyof typeof SALON.features };
 
 // Single source for the management menu and page permissions.
 export const NAV: NavItem[] = [
@@ -15,9 +16,11 @@ export const NAV: NavItem[] = [
   { href: '/gestion/prestations', label: 'Prestations', roles: ['OWNER'] },
   { href: '/gestion/ambassadeurs', label: 'Ambassadeurs', roles: ['OWNER', 'MANAGER'] },
   { href: '/gestion/robust-si', label: 'Robust SI', roles: ['OWNER', 'MANAGER'] },
-  { href: '/gestion/tombola', label: 'Tombola', roles: ['OWNER'] },
+  { href: '/gestion/abonnements', label: 'Abonnements', roles: ['OWNER', 'MANAGER'], feature: 'memberships' },
+  { href: '/gestion/tombola', label: 'Tombola', roles: ['OWNER'], feature: 'tombola' },
   { href: '/gestion/reglages', label: 'Réglages', roles: ['OWNER'] },
   { href: '/gestion/moi', label: 'Mon espace', roles: ['OWNER', 'MANAGER', 'BARBER'] },
 ];
 
-export const navFor = (role: Role) => NAV.filter((n) => n.roles.includes(role));
+/** Menu for a role; modules switched off in SALON.features are hidden. */
+export const navFor = (role: Role) => NAV.filter((n) => n.roles.includes(role) && (!n.feature || SALON.features[n.feature]));

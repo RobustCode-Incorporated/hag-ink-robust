@@ -5,6 +5,7 @@ import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 import { requireRole, MANAGERS } from '@/lib/auth';
+import { SALON } from '@/config/salon';
 import { audit, query, queryOne, tx } from '@/lib/db';
 import { BookingError, createBooking } from '@/lib/booking';
 import { euros, normalizePhone, parseEurosToCents } from '@/lib/format';
@@ -388,6 +389,7 @@ export async function saveHoursAction(f: FormData) {
 
 export async function addLotteryTicketAction(f: FormData) {
   const user = await requireRole('OWNER');
+  if (!SALON.features.tombola) redirect('/gestion'); // module switched off (SALON.features)
   const { randomInt } = await import('node:crypto');
   const { ticketNumber } = await import('@/domain/lottery');
   const phone = normalizePhone(s(f, 'phone'));
@@ -406,6 +408,7 @@ export async function addLotteryTicketAction(f: FormData) {
 
 export async function drawLotteryAction(f: FormData) {
   const user = await requireRole('OWNER');
+  if (!SALON.features.tombola) redirect('/gestion'); // module switched off (SALON.features)
   const { randomInt } = await import('node:crypto');
   const { pickWinner } = await import('@/domain/lottery');
   const drawDate = s(f, 'drawDate');

@@ -8,6 +8,7 @@ import { Link } from '@/i18n/navigation';
 import LogoReveal from '@/components/site/LogoReveal';
 import ScrollVideoBackground from '@/components/site/ScrollVideoBackground';
 import SiteNav from '@/components/site/SiteNav';
+import Packs from '@/components/site/Packs';
 import { SALON, type DayHours } from '@/config/salon';
 import { priceLabel } from '@/lib/format';
 
@@ -129,6 +130,9 @@ export default function HomeClient({ services, barbers, hours }: { services: Ser
             <p className="text-center text-sm text-neutral-500">{t('paymentNote')}</p>
           </div>
         </section>
+
+        {/* Packs FlexPay — switched off for now (SALON.features.memberships) */}
+        {SALON.features.memberships && <Packs />}
 
         {/* Team */}
         <section id="barbers" className="scroll-mt-16 bg-black/80 px-4 py-24 backdrop-blur-sm">
