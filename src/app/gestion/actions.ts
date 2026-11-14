@@ -4,6 +4,7 @@
 import bcrypt from 'bcryptjs';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
+import { after } from 'next/server';
 import { requireRole, MANAGERS } from '@/lib/auth';
 import { SALON } from '@/config/salon';
 import { audit, query, queryOne, tx } from '@/lib/db';
@@ -443,6 +444,8 @@ export async function requestJohnReportAction(f: FormData) {
   const { loadMonthlyFacts } = await import('@/lib/john');
   const facts = await loadMonthlyFacts(period, language);
   await query('INSERT INTO john_reports (period_key, language, facts, requested_by) VALUES ($1, $2, $3, $4)', [period, language, JSON.stringify(facts), user.id]);
+  const { triggerCloudWorker } = await import('@/lib/john');
+  after(triggerCloudWorker); // wake the cloud GPU worker, if configured (spec 011)
   await audit(user.id, 'john.request', 'john_report', period, { language });
   back('/gestion/robust-si', { msg: 'Demande envoyée à JOHN. La vidéo sera prête dans quelques minutes.' });
 }

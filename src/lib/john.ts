@@ -63,3 +63,20 @@ export async function loadMonthlyFacts(periodKey: string, language: Language): P
     releaseNotes: RELEASE_NOTES,
   });
 }
+
+/**
+ * Wakes the cloud JOHN worker (GPU, scale-to-zero) right after a report is queued. Optional: without
+ * JOHN_TRIGGER_URL nothing happens and the Mac worker (`python3 -m john watch`) picks the job up.
+ * The worker still claims through /api/john/worker/claim, so two workers never render the same report.
+ */
+export async function triggerCloudWorker(): Promise<void> {
+  const url = process.env.JOHN_TRIGGER_URL;
+  const key = process.env.JOHN_TRIGGER_KEY;
+  if (!url || !key) return;
+  try {
+    const res = await fetch(url, { method: 'POST', headers: { Authorization: `Bearer ${key}` }, signal: AbortSignal.timeout(10_000) });
+    if (!res.ok) console.error(`JOHN cloud trigger: HTTP ${res.status}`);
+  } catch (e) {
+    console.error('JOHN cloud trigger failed:', e);
+  }
+}
