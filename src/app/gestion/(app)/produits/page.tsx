@@ -1,5 +1,5 @@
 import { Card, Field, Flash, PageHeader, Table, Badge, input, btn, btnGhost } from '@/components/gestion/ui';
-import { requireRole, MANAGERS } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { euros } from '@/lib/format';
 import { restockAction, saveProductAction } from '../../actions';
@@ -27,7 +27,7 @@ function ProductForm({ p }: { p?: P }) {
 }
 
 export default async function ProduitsPage({ searchParams }: { searchParams: Promise<{ msg?: string; error?: string }> }) {
-  await requireRole(...MANAGERS);
+  await requireRole('OWNER'); // manager: no access (owner decision 2026-11-14)
   const sp = await searchParams;
   const products = await query<P>(
     `SELECT p.*, (SELECT COALESCE(sum(quantity),0) FROM sales s WHERE s.product_id = p.id AND s.voided_at IS NULL AND s.created_at > now() - interval '30 days')::int AS sold30

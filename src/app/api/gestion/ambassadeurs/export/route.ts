@@ -1,12 +1,12 @@
 import { NextResponse, type NextRequest } from 'next/server';
-import { requireRole, MANAGERS } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { audit, query } from '@/lib/db';
 import { toCsv } from '@/domain/ambassador-program';
 import { SALON } from '@/config/salon';
 
 // CSV exports (spec 010, phase 6). No client identity in any export; discount cost only for the owner.
 export async function GET(req: NextRequest) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER');
   const isOwner = user.role === 'OWNER';
   const type = req.nextUrl.searchParams.get('type') === 'bookings' ? 'bookings' : 'ambassadors';
   const tz = SALON.timezone;

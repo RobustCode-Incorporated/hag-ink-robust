@@ -52,8 +52,8 @@ docs/ specs/               ← RSDDF artifacts
 ## Roles
 | Role | Access |
 |---|---|
-| Direction (OWNER) | everything, incl. payroll, prices, hours, team & access, expense approval |
-| Manager | dashboard (no profit), agenda, till, clients, team (read), expenses (submit), stock |
+| Direction (OWNER) | everything, incl. payroll, prices, hours, team & access, expense approval, products, ambassadors, Robust SI |
+| Manager | dashboard for the current month only (no profit, no year), agenda, till (credits barbers only), clients (no lifetime spend), team (read), expenses (submit). No products page, ambassadors, Robust SI or "Mon espace" |
 | Barber | own agenda, own month earnings, calendar feed, password |
 
 ## Reuse for another salon

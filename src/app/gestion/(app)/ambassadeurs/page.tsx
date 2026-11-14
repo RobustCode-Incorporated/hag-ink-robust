@@ -1,5 +1,5 @@
 import { Badge, Card, Field, Flash, PageHeader, Stat, Table, btn, btnDanger, btnGhost, input } from '@/components/gestion/ui';
-import { requireRole, MANAGERS } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { query } from '@/lib/db';
 import Link from 'next/link';
 import { euros } from '@/lib/format';
@@ -10,7 +10,7 @@ export const metadata = { title: 'Ambassadeurs' };
 
 // Spec 010, phases 1-3. Definitions shown on the page so the numbers are read the same way by everyone.
 export default async function AmbassadeursPage({ searchParams }: { searchParams: Promise<{ msg?: string; error?: string }> }) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER'); // manager: no access (owner decision 2026-11-14)
   const sp = await searchParams;
   const isOwner = user.role === 'OWNER';
   const todo = await query<{ id: string; name: string; what: string }>(

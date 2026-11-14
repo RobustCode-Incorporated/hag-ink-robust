@@ -1,5 +1,5 @@
 import { Badge, Card, Field, Flash, PageHeader, Table, btn, btnGhost, input } from '@/components/gestion/ui';
-import { requireRole, MANAGERS } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { query } from '@/lib/db';
 import { salonDate } from '@/lib/timezone';
 import { requestJohnReportAction } from '../../actions';
@@ -17,7 +17,7 @@ const MONTHS = ['janvier', 'février', 'mars', 'avril', 'mai', 'juin', 'juillet'
 const monthLabel = (k: string) => `${MONTHS[Number(k.slice(5, 7)) - 1]} ${k.slice(0, 4)}`;
 
 export default async function RobustSiPage({ searchParams }: { searchParams: Promise<{ msg?: string; error?: string; play?: string }> }) {
-  await requireRole(...MANAGERS);
+  await requireRole('OWNER'); // manager: no access (owner decision 2026-11-14)
   const sp = await searchParams;
   const reports = await query<{ id: string; period_key: string; language: string; status: string; error: string | null; duration_sec: number | null; created_at: Date }>(
     'SELECT id, period_key, language, status, error, duration_sec, created_at FROM john_reports ORDER BY created_at DESC LIMIT 20');

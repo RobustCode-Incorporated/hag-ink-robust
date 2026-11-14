@@ -15,7 +15,8 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const user = await requireRole();
   if (user.role === 'BARBER') redirect('/gestion/moi');
   const isOwner = user.role === 'OWNER';
-  const period = periodRange((await searchParams).p);
+  // The manager only sees the current month (owner decision 2026-11-14); periods and the year are for the owner.
+  const period = periodRange(isOwner ? (await searchParams).p : 'month');
   const range = [period.from, period.to];
 
   const [totals, expenses, byStaff, byDay, recent, appts, staff, today, lowStock, pending] = await Promise.all([
@@ -37,7 +38,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
     query<{ day: string; revenue: number }>(
       `SELECT to_char(created_at AT TIME ZONE '${SALON.timezone}', 'YYYY-MM-DD') AS day, sum(amount_cents)::int AS revenue
          FROM sales WHERE voided_at IS NULL AND created_at >= $1 AND created_at < $2 GROUP BY 1 ORDER BY 1`,
-      [salonToUtc(addDays(salonDate(new Date()), -29), '00:00'), salonToUtc(addDays(salonDate(new Date()), 1), '00:00')]),
+      [isOwner ? salonToUtc(addDays(salonDate(new Date()), -29), '00:00') : period.from, salonToUtc(addDays(salonDate(new Date()), 1), '00:00')]),
     query<{ id: string; created_at: Date; kind: string; label: string; staff: string; amount_cents: number; payment_method: string }>(
       `SELECT s.id, s.created_at, s.kind, COALESCE(sv.name_fr, p.name) AS label, st.display_name AS staff, s.amount_cents, s.payment_method
          FROM sales s JOIN staff st ON st.id = s.staff_id LEFT JOIN services sv ON sv.id = s.service_id LEFT JOIN products p ON p.id = s.product_id
@@ -68,12 +69,14 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
   const net = revenue - commissions - (expenses?.total ?? 0);
   const maxDay = Math.max(1, ...byDay.map((d) => d.revenue));
   const maxStaff = Math.max(1, ...byStaff.map((d) => d.revenue));
-  const days30 = Array.from({ length: 30 }, (_, i) => addDays(salonDate(new Date()), i - 29));
+  const todayStr = salonDate(new Date());
+  const chartLen = isOwner ? 30 : Number(todayStr.slice(8, 10));
+  const days30 = Array.from({ length: chartLen }, (_, i) => addDays(todayStr, i - chartLen + 1));
 
   return (
     <>
       <PageHeader title="Tableau de bord" subtitle={`Période : ${period.label}`}
-        actions={PERIODS.map((p) => (
+        actions={isOwner && PERIODS.map((p) => (
           <Link key={p.key} href={`/gestion?p=${p.key}`} className={`rounded-full border px-3 py-1 text-xs ${p.key === period.key ? 'border-black bg-black text-white' : 'border-rem-line bg-white hover:border-black'}`}>{p.label}</Link>
         ))} />
 
@@ -100,7 +103,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-3">
-        <Card title="Chiffre d'affaires — 30 derniers jours" className="lg:col-span-2">
+        <Card title={isOwner ? "Chiffre d'affaires — 30 derniers jours" : "Chiffre d'affaires — ce mois"} className="lg:col-span-2">
           <div className="flex h-44 items-end gap-1" role="img" aria-label="Chiffre d'affaires par jour">
             {days30.map((d) => {
               const v = byDay.find((x) => x.day === d)?.revenue ?? 0;
@@ -157,7 +160,7 @@ export default async function Dashboard({ searchParams }: { searchParams: Promis
       {(lowStock.length > 0 || (isOwner && (pending?.n ?? 0) > 0)) && (
         <div className="mt-6 grid gap-4 md:grid-cols-2">
           {lowStock.length > 0 && (
-            <Card title="Stock bas"><p className="text-sm">{lowStock.map((p) => `${p.name} (${p.stock_qty})`).join(', ')} — <Link className="underline" href="/gestion/produits">réapprovisionner</Link></p></Card>
+            <Card title="Stock bas"><p className="text-sm">{lowStock.map((p) => `${p.name} (${p.stock_qty})`).join(', ')}{isOwner ? <> — <Link className="underline" href="/gestion/produits">réapprovisionner</Link></> : ' — prévenir la direction'}</p></Card>
           )}
           {isOwner && (pending?.n ?? 0) > 0 && (
             <Card title="À valider"><p className="text-sm">{pending!.n} dépense(s) en attente — <Link className="underline" href="/gestion/depenses">voir</Link></p></Card>

@@ -27,7 +27,11 @@ export default function GestionNav({ items, userName, role }: { items: NavItem[]
           ))}
         </nav>
         <div className="hidden items-center gap-3 lg:flex">
-          <Link href="/gestion/moi" title="Mon espace" className={`text-right text-[10px] uppercase leading-tight hover:text-white ${isActive('/gestion/moi') ? 'text-white' : 'text-rem-grey'}`}>{userName}<br />{role}</Link>
+          {items.some((i) => i.href === '/gestion/moi') ? (
+            <Link href="/gestion/moi" title="Mon espace" className={`text-right text-[10px] uppercase leading-tight hover:text-white ${isActive('/gestion/moi') ? 'text-white' : 'text-rem-grey'}`}>{userName}<br />{role}</Link>
+          ) : (
+            <span className="text-right text-[10px] uppercase leading-tight text-rem-grey">{userName}<br />{role}</span>
+          )}
           <form action="/api/auth/logout" method="post">
             <button className="rounded-full border border-[#333] px-4 py-1.5 text-[10px] uppercase tracking-wider hover:bg-white hover:text-black">Déconnexion</button>
           </form>

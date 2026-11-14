@@ -12,14 +12,14 @@ export const NAV: NavItem[] = [
   { href: '/gestion/equipe', label: 'Équipe', roles: ['OWNER', 'MANAGER'] },
   { href: '/gestion/salaires', label: 'Salaires', roles: ['OWNER'] },
   { href: '/gestion/depenses', label: 'Dépenses', roles: ['OWNER', 'MANAGER'] },
-  { href: '/gestion/produits', label: 'Produits', roles: ['OWNER', 'MANAGER'] },
+  { href: '/gestion/produits', label: 'Produits', roles: ['OWNER'] },
   { href: '/gestion/prestations', label: 'Prestations', roles: ['OWNER'] },
-  { href: '/gestion/ambassadeurs', label: 'Ambassadeurs', roles: ['OWNER', 'MANAGER'] },
-  { href: '/gestion/robust-si', label: 'Robust SI', roles: ['OWNER', 'MANAGER'] },
+  { href: '/gestion/ambassadeurs', label: 'Ambassadeurs', roles: ['OWNER'] },
+  { href: '/gestion/robust-si', label: 'Robust SI', roles: ['OWNER'] },
   { href: '/gestion/abonnements', label: 'Abonnements', roles: ['OWNER', 'MANAGER'], feature: 'memberships' },
   { href: '/gestion/tombola', label: 'Tombola', roles: ['OWNER'], feature: 'tombola' },
   { href: '/gestion/reglages', label: 'Réglages', roles: ['OWNER'] },
-  { href: '/gestion/moi', label: 'Mon espace', roles: ['OWNER', 'MANAGER', 'BARBER'] },
+  { href: '/gestion/moi', label: 'Mon espace', roles: ['OWNER', 'BARBER'] },
 ];
 
 /** Menu for a role; modules switched off in SALON.features are hidden. */

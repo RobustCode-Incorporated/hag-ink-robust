@@ -2,7 +2,7 @@ import Link from 'next/link';
 import PortalLink from './PortalLink';
 import { notFound } from 'next/navigation';
 import { Badge, Card, Field, Flash, PageHeader, Stat, Table, btn, btnDanger, btnGhost, input } from '@/components/gestion/ui';
-import { requireRole, MANAGERS } from '@/lib/auth';
+import { requireRole } from '@/lib/auth';
 import { query, queryOne } from '@/lib/db';
 import { SITE_URL } from '@/config/salon';
 import { CRITERIA, RECO_LABEL, allowanceBalance, latestScores, scoreOf, type Recommendation, type Scores } from '@/domain/ambassador-program';
@@ -15,7 +15,7 @@ const KIND: Record<string, string> = { ALLOCATION: 'Allocation', CONSUMPTION: 'P
 const DSTATUS: Record<string, [string, 'neutral' | 'warn' | 'ok' | 'danger']> = { EXPECTED: ['attendu', 'neutral'], SUBMITTED: ['à valider', 'warn'], APPROVED: ['validé', 'ok'], REJECTED: ['refusé', 'danger'] };
 
 export default async function AmbassadorDetail({ params, searchParams }: { params: Promise<{ id: string }>; searchParams: Promise<{ msg?: string; error?: string }> }) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER'); // manager: no access (owner decision 2026-11-14)
   const isOwner = user.role === 'OWNER';
   const { id } = await params;
   const sp = await searchParams;

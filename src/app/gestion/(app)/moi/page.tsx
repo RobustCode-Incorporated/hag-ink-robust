@@ -13,7 +13,7 @@ import { changeOwnPasswordAction } from '../../actions';
 export const metadata = { title: 'Mon espace' };
 
 export default async function MoiPage({ searchParams }: { searchParams: Promise<{ msg?: string; error?: string }> }) {
-  const user = await requireRole();
+  const user = await requireRole('OWNER', 'BARBER'); // no "Mon espace" for the manager
   const sp = await searchParams;
   const { from, to } = monthRange(salonDate(new Date()).slice(0, 7));
   const [me, sales, upcoming] = await Promise.all([

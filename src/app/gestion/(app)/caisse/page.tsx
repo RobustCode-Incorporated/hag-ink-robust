@@ -15,7 +15,7 @@ const PAY = (
 );
 
 export default async function CaissePage({ searchParams }: { searchParams: Promise<{ appointment?: string; msg?: string; error?: string }> }) {
-  await requireRole(...MANAGERS);
+  const user = await requireRole(...MANAGERS);
   const sp = await searchParams;
   const today = salonDate(new Date());
   const range = [salonToUtc(today, '00:00'), salonToUtc(addDays(today, 1), '00:00')];
@@ -27,7 +27,9 @@ export default async function CaissePage({ searchParams }: { searchParams: Promi
          FROM appointments a JOIN clients c ON c.id=a.client_id JOIN services sv ON sv.id=a.service_id JOIN staff st ON st.id=a.staff_id
         WHERE a.status='BOOKED' AND ((a.starts_at >= $1::timestamptz - interval '2 days' AND a.starts_at < $2) OR a.id = $3::uuid) ORDER BY a.starts_at`,
       [...range, /^[0-9a-f-]{36}$/i.test(sp.appointment ?? '') ? sp.appointment : null]),
-    query<{ id: string; display_name: string }>('SELECT id, display_name FROM staff WHERE active ORDER BY sort, display_name'),
+    // The manager only credits barbers (not Direction / Manager).
+    query<{ id: string; display_name: string }>(
+      `SELECT id, display_name FROM staff WHERE active ${user.role === 'MANAGER' ? "AND role = 'BARBER'" : ''} ORDER BY sort, display_name`),
     query<{ id: string; name_fr: string; price_cents: number }>('SELECT id, name_fr, price_cents FROM services WHERE active ORDER BY sort'),
     query<{ id: string; name: string; price_cents: number; stock_qty: number }>('SELECT id, name, price_cents, stock_qty FROM products WHERE active ORDER BY name'),
     query<{ id: string; created_at: Date; kind: string; label: string; staff: string; amount_cents: number; tip_cents: number; payment_method: string; quantity: number; voided_at: Date | null }>(

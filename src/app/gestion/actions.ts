@@ -166,6 +166,10 @@ export async function recordSaleAction(f: FormData) {
 
   const staffId = s(f, 'staffId');
   if (!UUID.test(staffId)) back(ret, { error: 'Choisis le barber.' });
+  if (user.role === 'MANAGER') {
+    const isBarber = await queryOne('SELECT 1 FROM staff WHERE id = $1 AND active AND role = $2', [staffId, 'BARBER']);
+    if (!isBarber) back(ret, { error: 'Choisis un barber.' });
+  }
 
   if (kind === 'SERVICE') {
     const serviceId = s(f, 'serviceId');
@@ -307,7 +311,7 @@ export async function decideExpenseAction(f: FormData) {
 /* ---------------- Produits ---------------- */
 
 export async function saveProductAction(f: FormData) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER');
   const id = s(f, 'id');
   const price = parseEurosToCents(s(f, 'price'));
   const purchase = parseEurosToCents(s(f, 'purchase') || '0') ?? 0;
@@ -329,7 +333,7 @@ export async function saveProductAction(f: FormData) {
 }
 
 export async function restockAction(f: FormData) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER');
   const id = s(f, 'id');
   const qty = Math.trunc(Number(s(f, 'quantity')));
   if (!UUID.test(id) || !qty || Math.abs(qty) > 1000) back('/gestion/produits', { error: 'Quantité invalide.' });
@@ -430,7 +434,7 @@ export async function drawLotteryAction(f: FormData) {
 /* ---------------- Robust SI · JOHN (spec 011) ---------------- */
 
 export async function requestJohnReportAction(f: FormData) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER');
   const period = s(f, 'period');
   const language = s(f, 'language') === 'en' ? 'en' : 'fr';
   if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(period)) back('/gestion/robust-si', { error: 'Mois invalide.' });
@@ -446,7 +450,7 @@ export async function requestJohnReportAction(f: FormData) {
 /* ---------------- Ambassadeurs (spec 010) ---------------- */
 
 export async function decideApplicationAction(f: FormData) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER');
   const id = s(f, 'id');
   const approve = s(f, 'decision') === 'APPROVED';
   const percent = Math.round(Number(s(f, 'percent') || '10'));
@@ -473,7 +477,7 @@ export async function decideApplicationAction(f: FormData) {
 }
 
 export async function updatePromoAction(f: FormData) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER');
   const id = s(f, 'id');
   const percent = Math.round(Number(s(f, 'percent')));
   const maxUses = s(f, 'maxUses') ? Math.round(Number(s(f, 'maxUses'))) : null;
@@ -490,7 +494,7 @@ export async function updatePromoAction(f: FormData) {
 }
 
 export async function toggleAmbassadorAction(f: FormData) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER');
   const id = s(f, 'id');
   if (UUID.test(id)) {
     await query('UPDATE ambassadors SET active = NOT active WHERE id = $1', [id]);
@@ -512,7 +516,7 @@ async function ledgerOf(c: import('pg').PoolClient, allowanceId: string) {
 }
 
 export async function proposeAllowanceAction(f: FormData) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER');
   const amb = s(f, 'ambassadorId');
   const qty = Math.round(Number(s(f, 'quantity')));
   const serviceId = uuidOrNull(s(f, 'serviceId'));
@@ -578,7 +582,7 @@ export async function adjustAllowanceAction(f: FormData) {
 }
 
 export async function addDeliverableAction(f: FormData) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER');
   const amb = s(f, 'ambassadorId');
   const kind = ['REEL', 'POST', 'STORY', 'TIKTOK', 'AUTRE'].includes(s(f, 'kind')) ? s(f, 'kind') : 'AUTRE';
   const due = s(f, 'dueDate') || null;
@@ -588,7 +592,7 @@ export async function addDeliverableAction(f: FormData) {
 }
 
 export async function reviewDeliverableAction(f: FormData) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER');
   const id = s(f, 'id'); const amb = s(f, 'ambassadorId');
   const status = s(f, 'decision') === 'APPROVED' ? 'APPROVED' : 'REJECTED';
   if (!UUID.test(id)) back(AMB(amb), { error: 'Contenu inconnu.' });
@@ -600,7 +604,7 @@ export async function reviewDeliverableAction(f: FormData) {
 }
 
 export async function addAssessmentAction(f: FormData) {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER');
   const amb = s(f, 'ambassadorId');
   const phase = s(f, 'phase') === 'PERFORMANCE' ? 'PERFORMANCE' : 'POTENTIAL';
   const { CRITERIA, cleanScores, scoreOf } = await import('@/domain/ambassador-program');
@@ -617,7 +621,7 @@ export async function addAssessmentAction(f: FormData) {
 }
 
 export async function portalLinkAction(_prev: { url?: string; error?: string } | null, f: FormData): Promise<{ url?: string; error?: string }> {
-  const user = await requireRole(...MANAGERS);
+  const user = await requireRole('OWNER');
   const amb = s(f, 'ambassadorId');
   if (!UUID.test(amb)) return { error: 'Ambassadeur inconnu.' };
   const { rotatePortalToken } = await import('@/lib/ambassador-portal');
