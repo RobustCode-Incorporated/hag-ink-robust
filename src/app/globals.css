@@ -1,54 +1,46 @@
 @import "tailwindcss";
 
-:root {
-  --background: #ffffff;
-  --foreground: #171717;
-}
-
 @theme inline {
-  --color-background: var(--background);
-  --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
-  --font-mono: var(--font-geist-mono);
+  /* Public site (salon brand) */
+  --font-display: var(--font-anton), Impact, sans-serif;
+  --font-body: var(--font-archivo), system-ui, sans-serif;
+  --color-ink: #050505;
+  --color-neon: #f4f7ff;
+  --color-graffiti: #ffb21e;
+  --color-pink: #ff6fae;
+  --color-cabinet: #d7263d;
+
+  /* Robust management (REM design system, DEC-005) */
+  --font-rem: var(--font-abeezee), system-ui, sans-serif;
+  --font-brand: var(--font-ysabeau), system-ui, sans-serif;
+  --color-snow: #fffafa;
+  --color-rem-line: #dddddd;
+  --color-rem-grey: #a0a0a0;
+  --color-ok: #1b5e20;
+  --color-danger: #d32f2f;
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0a0a0a;
-    --foreground: #ededed;
-  }
+html { scroll-behavior: smooth; }
+body { -webkit-font-smoothing: antialiased; }
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
 }
 
-body {
-  background: var(--background);
-  color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+.neon-text {
+  text-shadow: 0 0 6px rgba(244, 247, 255, 0.55), 0 0 22px rgba(244, 247, 255, 0.25);
 }
 
-@page {
-  size: A4;
-  margin: 12mm;
+.hex-grid {
+  background-image:
+    linear-gradient(30deg, transparent 47%, rgba(255,255,255,0.05) 48%, rgba(255,255,255,0.05) 52%, transparent 53%),
+    linear-gradient(150deg, transparent 47%, rgba(255,255,255,0.05) 48%, rgba(255,255,255,0.05) 52%, transparent 53%),
+    linear-gradient(90deg, transparent 47%, rgba(255,255,255,0.05) 48%, rgba(255,255,255,0.05) 52%, transparent 53%);
+  background-size: 56px 97px;
 }
 
 @media print {
-  body {
-    background: white !important;
-    color: black;
-    font-size: 11pt;
-  }
-
-  .no-print {
-    display: none !important;
-  }
-
-  .printable-report {
-    box-shadow: none !important;
-    border: 1px solid #e2e8f0;
-    break-inside: avoid;
-    page-break-inside: avoid;
-  }
-
-  .print-only {
-    display: block !important;
-  }
+  .no-print { display: none !important; }
+  body { background: white !important; }
 }

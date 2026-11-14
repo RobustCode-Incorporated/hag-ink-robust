@@ -1,106 +1,41 @@
-import { NextResponse } from 'next/server';
-import prisma from '@/lib/prisma';
-import { compare, hash } from 'bcryptjs';
-import type { Role } from '@/../generated/prisma/client';
-import {
-  createSessionToken,
-  SESSION_COOKIE_NAME,
-  SESSION_TTL_SECONDS,
-  type AuthRole,
-  roleHome,
-} from '@/lib/auth';
+import bcrypt from 'bcryptjs';
+import { NextResponse, type NextRequest } from 'next/server';
+import { audit, query, queryOne } from '@/lib/db';
+import { SESSION_COOKIE, SESSION_TTL_SECONDS, signSession, type Role } from '@/lib/session';
 
-const PASSWORD_SALT_ROUNDS = 12;
+const MAX_ATTEMPTS = 8; // per email or IP, per 15 minutes
 
+export async function POST(req: NextRequest) {
+  const body = await req.json().catch(() => ({}));
+  const email = typeof body.email === 'string' ? body.email.trim().toLowerCase() : '';
+  const password = typeof body.password === 'string' ? body.password : '';
+  if (!email || !password) return NextResponse.json({ error: 'Identifiants requis.' }, { status: 400 });
 
-type LoginBody = {
-  email: unknown;
-  password: unknown;
-  role: unknown;
-};
-
-type SeedCredentials = {
-  email: string;
-  password: string;
-};
-
-function getEnvManagementCredentials(role: AuthRole): SeedCredentials | null {
-  if (role === 'CEO') {
-    const email = process.env.CEO_LOGIN_EMAIL?.trim().toLowerCase();
-    const password = process.env.CEO_LOGIN_PASSWORD;
-    if (!email || !password) return null;
-    return { email, password };
+  const ip = req.headers.get('x-forwarded-for')?.split(',')[0]?.trim() ?? 'local';
+  const recent = await queryOne<{ n: number }>(
+    `SELECT count(*)::int AS n FROM login_attempts WHERE key = ANY($1) AND at > now() - interval '15 minutes'`,
+    [[`e:${email}`, `ip:${ip}`]],
+  );
+  if ((recent?.n ?? 0) >= MAX_ATTEMPTS * 2) {
+    return NextResponse.json({ error: 'Trop de tentatives. Réessayez dans 15 minutes.' }, { status: 429 });
   }
 
-  const email = process.env.MANAGER_LOGIN_EMAIL?.trim().toLowerCase();
-  const password = process.env.MANAGER_LOGIN_PASSWORD;
-  if (!email || !password) return null;
-  return { email, password };
-}
-
-async function ensureManagementUser(role: AuthRole, email: string): Promise<void> {
-  const credentials = getEnvManagementCredentials(role);
-  if (!credentials) return;
-  if (credentials.email !== email) return;
-
-  const existingUser = await prisma.user.findFirst({
-    where: {
-      role,
-      email,
-    },
-    select: { id: true },
-  });
-
-  if (existingUser) return;
-
-  await prisma.user.create({
-    data: {
-      email,
-      password: await hash(credentials.password, PASSWORD_SALT_ROUNDS),
-      role: role as Role,
-    },
-  });
-}
-
-export async function POST(request: Request) {
-  try {
-    const { email, password, role } = (await request.json()) as LoginBody;
-
-    if (typeof email !== 'string' || typeof password !== 'string' || (role !== 'CEO' && role !== 'MANAGER')) {
-      return NextResponse.json({ error: 'Email et mot de passe requis' }, { status: 400 });
-    }
-
-    const normalizedEmail = email.trim().toLowerCase();
-    const normalizedPassword = password.trim();
-
-    await ensureManagementUser(role, normalizedEmail);
-
-    const user = await prisma.user.findFirst({
-      where: {
-        role,
-        email: normalizedEmail,
-      },
-    });
-
-    const isValid = user ? await compare(normalizedPassword, user.password) : false;
-
-    if (!isValid) {
-      return NextResponse.json({ error: 'Identifiants invalides.' }, { status: 401 });
-    }
-
-    const token = await createSessionToken({ role, email: normalizedEmail });
-    const response = NextResponse.json({ success: true, role, redirectTo: roleHome(role) });
-    response.cookies.set({
-      name: SESSION_COOKIE_NAME,
-      value: token,
-      httpOnly: true,
-      sameSite: 'lax',
-      secure: process.env.NODE_ENV === 'production',
-      maxAge: SESSION_TTL_SECONDS,
-      path: '/',
-    });
-    return response;
-  } catch (error) {
-    return NextResponse.json({ error: 'Erreur serveur' }, { status: 500 });
+  const user = await queryOne<{ id: string; role: Role; display_name: string; password_hash: string }>(
+    'SELECT id, role, display_name, password_hash FROM staff WHERE lower(email) = $1 AND active AND password_hash IS NOT NULL',
+    [email],
+  );
+  const ok = user ? await bcrypt.compare(password, user.password_hash) : false;
+  if (!user || !ok) {
+    await query('INSERT INTO login_attempts (key) VALUES ($1), ($2)', [`e:${email}`, `ip:${ip}`]);
+    return NextResponse.json({ error: 'Email ou mot de passe incorrect.' }, { status: 401 });
   }
+  await query('DELETE FROM login_attempts WHERE key = $1', [`e:${email}`]);
+  await audit(user.id, 'login', 'staff', user.id);
+
+  const res = NextResponse.json({ redirectTo: '/gestion' });
+  res.cookies.set({
+    name: SESSION_COOKIE, value: await signSession({ sub: user.id, role: user.role, name: user.display_name }),
+    httpOnly: true, sameSite: 'lax', secure: process.env.NODE_ENV === 'production', path: '/', maxAge: SESSION_TTL_SECONDS,
+  });
+  return res;
 }
